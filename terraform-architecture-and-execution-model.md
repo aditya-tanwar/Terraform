@@ -70,7 +70,7 @@ sequenceDiagram
 
     C->>S: Read current Terraform state
     C->>P: Initialize configured providers
-    C->>A: Refresh managed resources
+    C->>A: Refresh managed resources ( API calls / SDK )
     A-->>P: Actual remote object data
     P-->>C: Refreshed values
     C->>C: Compare code, refreshed state, and prior state
