@@ -11,7 +11,7 @@ provider APIs to make reality match the declared state.
 flowchart LR
     Code["Terraform code<br/>resources, modules, variables"] --> Core["Terraform Core<br/>parses code + builds graph + plans"]
     State["State backend<br/>S3 / HCP Terraform / Terraform Cloud"] <--> Core
-    Core <-->|"RPC"| Providers["Provider plugins<br/>AWS, Kubernetes, GitHub, Datadog"]
+    Core <-->|"RPC/gRPC"| Providers["Provider plugins<br/>AWS, Kubernetes, GitHub, Datadog"]
     Providers <-->|"API calls"| Cloud["AWS / Kubernetes / SaaS APIs"]
     Core --> Plan["Plan file<br/>proposed change set"]
     Plan --> Apply["Apply"]
@@ -20,9 +20,9 @@ flowchart LR
 ## Practical mental model
 
 ``` text
-HCL configuration = intended infrastructure
+HCL configuration = intended infrastructure (Desired State)
 Provider APIs      = actual infrastructure
-State              = Terraform's memory of managed infrastructure
+State              = Terraform's memory of managed infrastructure (Current managerd Architecture)
 Terraform Core     = planner and orchestrator
 ```
 
