@@ -91,19 +91,11 @@ controls.
 A backend is not the same thing as a provider.
 
   -----------------------------------------------------------------------
-  Component                           Responsibility
-  ----------------------------------- -----------------------------------
-  Backend                             Stores and retrieves Terraform
-                                      state; may coordinate locks
-
-  Provider                            Communicates with AWS, Azure, GCP,
-                                      Kubernetes, etc. to manage
-                                      infrastructure
-
-  Terraform Core                      Builds plans, evaluates
-                                      dependencies, coordinates providers
-                                      and state
-  -----------------------------------------------------------------------
+| Component | Responsibility |
+| --- | --- |
+| Backend | Stores and retrieves Terraform state; may coordinate locks |
+| Provider | Communicates with AWS, Azure, GCP, Kubernetes, etc. to manage infrastructure |
+| Terraform Core | Builds plans, evaluates dependencies, coordinates providers and state |
 
 Example:
 
@@ -291,17 +283,16 @@ and approvals, depending on product and configuration.
 
 ### 3.6 Other built-in backends
 
-  Backend        Storage                        Locking
-  -------------- ------------------------------ ---------------------------------
-  `consul`       Consul KV                      Yes
-  `http`         HTTP REST service              Optional, if server supports it
-  `kubernetes`   Kubernetes Secret              Yes, using Lease resources
-  `pg`           PostgreSQL                     Yes, advisory locks
-  `cos`          Tencent Cloud Object Storage   Yes
-  `oss`          Alibaba Cloud OSS              Via TableStore configuration
-  `swift`        OpenStack Swift                Backend-specific
-  `manta`        Joyent Manta                   Backend-specific
-
+| Backend | Storage | Locking |
+| --- | --- | --- |
+| `consul` | Consul KV | Yes |
+| `http` | HTTP REST service | Optional, if server supports it |
+| `kubernetes` | Kubernetes Secret | Yes, using Lease resources |
+| `pg` | PostgreSQL | Yes, advisory locks |
+| `cos` | Tencent Cloud Object Storage | Yes |
+| `oss` | Alibaba Cloud OSS | Via TableStore configuration |
+| `swift` | OpenStack Swift | Backend-specific |
+| `manta` | Joyent Manta | Backend-specific |
 The HTTP backend requires a server that implements the relevant locking
 endpoints if locking is to be supported. Kubernetes uses Lease resources
 for locking. PostgreSQL uses advisory locks.
@@ -941,34 +932,18 @@ restrictive bucket policies.
 ## 17. Quick comparison of backend options
 
   ---------------------------------------------------------------------------
-  Backend           State storage     Locking            Typical use
-  ----------------- ----------------- ------------------ --------------------
-  Local             Local file        Local mechanism    Learning, isolated
-                                                         work
-
-  S3                AWS S3 object     S3 lock file       AWS infrastructure
-                                      (`use_lockfile`)
-
-  AzureRM           Azure Blob        Blob lease         Azure infrastructure
-
-  GCS               Google Cloud      Supported          GCP infrastructure
-                    Storage
-
-  HCP Terraform /   HCP Terraform     Supported          Centralized state
-  remote            workspace                            and remote execution
-
-  Consul            Consul KV         Supported          Consul-based
-                                                         environments
-
-  Kubernetes        Kubernetes Secret Lease              Kubernetes-centric
-                                                         environments
-
-  PostgreSQL (`pg`) PostgreSQL        Advisory locks     PostgreSQL-backed
-                                                         state
-
-  HTTP              REST service      Optional server    Custom state service
-                                      support
-  ---------------------------------------------------------------------------
+| Backend | State storage | Locking | Typical use |
+| --- | --- | --- | --- |
+| Local | Local file | Local mechanism | Learning, isolated work |
+| S3 | AWS S3 object | S3 lock file (`use_lockfile`) | AWS infrastructure |
+| AzureRM | Azure Blob | Blob lease | Azure infrastructure |
+| GCS | Google Cloud Storage | Supported | GCP infrastructure |
+| HCP Terraform / | HCP Terraform | Supported | Centralized state |
+| remote | workspace |  | and remote execution |
+| Consul | Consul KV | Supported | Consul-based environments |
+| Kubernetes | Kubernetes Secret | Lease | Kubernetes-centric environments |
+| PostgreSQL (`pg`) | PostgreSQL | Advisory locks | PostgreSQL-backed state |
+| HTTP | REST service | Optional server support | Custom state service |
 
 ## 18. Commands to remember
 
