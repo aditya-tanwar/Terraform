@@ -1,6 +1,5 @@
 # Terraform Learning and Infrastructure Modules
 
-
 A practical Terraform learning repository covering Terraform internals, state management, execution planning, provider communication, backends, and reusable infrastructure modules.
 
 The material is organized to support both hands-on learning and senior DevOps interview preparation. Examples primarily use AWS and CI/CD workflows, with Kubernetes and other platform references where relevant.
