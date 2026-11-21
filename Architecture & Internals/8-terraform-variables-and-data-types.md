@@ -319,7 +319,6 @@ easier to validate and understand.
 
 ### Variable declarations and related constructs
 
-  ----------------------------------------------------------------------------------
 | Construct | Purpose | How to reference or use it |
 | --- | --- | --- |
 | Input variable (`variable`) | Accept input for a module | `var.name` |
