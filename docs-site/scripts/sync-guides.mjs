@@ -57,15 +57,15 @@ hero:
       link: https://github.com/aditya-tanwar/Terraform/tree/main/Architecture%20%26%20Internals
 features:
   - icon:
-      src: /icons/architecture.svg
+      svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5v-9Z"/><path d="m4.5 7.8 7.5 4.3 7.5-4.3M12 12.1V21"/></svg>'
     title: Understand the internals
     details: Go beyond commands and HCL. Explore Terraform Core, providers, RPC, graph execution and state.
   - icon:
-      src: /icons/learning-path.svg
+      svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 4.5h14v15H5z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>'
     title: A guided learning path
     details: Follow the original numbered guides in sequence, from foundational architecture to advanced production concepts.
   - icon:
-      src: /icons/source.svg
+      svg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 3.5h7l4 4v13H7z"/><path d="M14 3.5v4h4M10 12h5M10 16h5"/></svg>'
     title: Markdown-first documentation
     details: The repository's Architecture & Internals folder remains the single source of truth. The site is generated from it.
 ---
