@@ -90,7 +90,6 @@ controls.
 
 A backend is not the same thing as a provider.
 
-  -----------------------------------------------------------------------
 | Component | Responsibility |
 | --- | --- |
 | Backend | Stores and retrieves Terraform state; may coordinate locks |
@@ -931,7 +930,6 @@ restrictive bucket policies.
 
 ## 17. Quick comparison of backend options
 
-  ---------------------------------------------------------------------------
 | Backend | State storage | Locking | Typical use |
 | --- | --- | --- | --- |
 | Local | Local file | Local mechanism | Learning, isolated work |
