@@ -68,11 +68,10 @@ resource "aws_instance" "web" {
 Terraform needs to remember which real AWS objects correspond to these
 resource blocks.
 
-  Terraform resource   Actual AWS resource ID
-  -------------------- ------------------------
-  `aws_vpc.main`       `vpc-0123456789`
-  `aws_instance.web`   `i-0123456789`
-
+| Terraform resource | Actual AWS resource ID |
+| --- | --- |
+| `aws_vpc.main` | `vpc-0123456789` |
+| `aws_instance.web` | `i-0123456789` |
 State records these bindings, attributes, provider metadata, outputs,
 and other information Terraform needs to manage resources.
 
@@ -236,12 +235,11 @@ Think of the Lock ID as a token:
 The lock is maintained separately by the backend. The Lock ID is not the
 state serial number and is not normally a field in the state snapshot.
 
-  Identifier   What it identifies
-  ------------ --------------------------------------
-  Lineage      State history or family
-  Serial       Snapshot version within that lineage
-  Lock ID      Particular active lock
-
+| Identifier | What it identifies |
+| --- | --- |
+| Lineage | State history or family |
+| Serial | Snapshot version within that lineage |
+| Lock ID | Particular active lock |
 ### What if a pipeline crashes and leaves a lock?
 
 Terraform normally releases the lock when its operation finishes. If a
@@ -426,11 +424,10 @@ Think of it as:
 
 Terraform performs safety checks:
 
-  Check     What Terraform verifies
-  --------- -------------------------------------------------------------
-  Lineage   Does the local state belong to the same state history?
-  Serial    Is the destination state newer than the state being pushed?
-
+| Check | What Terraform verifies |
+| --- | --- |
+| Lineage | Does the local state belong to the same state history? |
+| Serial | Is the destination state newer than the state being pushed? |
 Example:
 
 ```text
@@ -461,17 +458,11 @@ state and understand exactly which state you are replacing before using
 No.
 
   -----------------------------------------------------------------------
-  Command                             What it does
-  ----------------------------------- -----------------------------------
-  `terraform state pull`              Reads state from the backend
-
-  `terraform plan`                    Normally refreshes infrastructure
-                                      information through providers and
-                                      calculates a plan
-
-  `terraform state push`              Writes a supplied state file to the
-                                      backend
-  -----------------------------------------------------------------------
+| Command | What it does |
+| --- | --- |
+| `terraform state pull` | Reads state from the backend |
+| `terraform plan` | Normally refreshes infrastructure information through providers and calculates a plan |
+| `terraform state push` | Writes a supplied state file to the backend |
 
 `state pull` is a backend operation, not an AWS discovery operation.
 
@@ -548,23 +539,15 @@ dependencies and shared infrastructure between those configurations.
 ## 11. Practical commands to remember
 
   -----------------------------------------------------------------------
-  Command                             Purpose
-  ----------------------------------- -----------------------------------
-  `terraform state pull`              Retrieve the current state
-
-  `terraform state push FILE`         Push a state file
-
-  `terraform state list`              List resources recorded in state
-
-  `terraform state show ADDRESS`      Inspect a resource in state
-
-  `terraform force-unlock LOCK_ID`    Release a verified stale lock
-
-  `terraform plan -lock-timeout=5m`   Wait up to five minutes to acquire
-                                      a lock
-
-  `terraform state mv OLD NEW`        Change a resource address in state
-  -----------------------------------------------------------------------
+| Command | Purpose |
+| --- | --- |
+| `terraform state pull` | Retrieve the current state |
+| `terraform state push FILE` | Push a state file |
+| `terraform state list` | List resources recorded in state |
+| `terraform state show ADDRESS` | Inspect a resource in state |
+| `terraform force-unlock LOCK_ID` | Release a verified stale lock |
+| `terraform plan -lock-timeout=5m` | Wait up to five minutes to acquire a lock |
+| `terraform state mv OLD NEW` | Change a resource address in state |
 
 State operations work with remote backends through the Terraform CLI.
 Reads and writes involve backend communication. State-modifying CLI
