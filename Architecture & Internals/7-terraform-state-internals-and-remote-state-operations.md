@@ -1,12 +1,31 @@
 # Terraform State Internals and Remote State Operations
 
+## Contents
+
+- [1. The big picture](#1-the-big-picture)
+- [2. What is Terraform state?](#2-what-is-terraform-state)
+- [3. What is state lineage?](#3-what-is-state-lineage)
+- [4. What is the state serial number?](#4-what-is-the-state-serial-number)
+- [5. What is a state lock and Lock ID?](#5-what-is-a-state-lock-and-lock-id)
+- [6. What is a state snapshot?](#6-what-is-a-state-snapshot)
+- [7. How does Terraform write state to a remote backend?](#7-how-does-terraform-write-state-to-a-remote-backend)
+- [8. \`terraform state pull\` vs \`terraform state push\`](#8-terraform-state-pull-vs-terraform-state-push)
+- [9. What if writing to the backend fails?](#9-what-if-writing-to-the-backend-fails)
+- [10. End-to-end Jenkins example](#10-end-to-end-jenkins-example)
+- [11. Practical commands to remember](#11-practical-commands-to-remember)
+- [12. Production best practices](#12-production-best-practices)
+- [13. Interview questions](#13-interview-questions)
+- [14. Final mental model](#14-final-mental-model)
+
+---
+
 ## 1. The big picture
 
 Terraform state is a versioned record of the infrastructure Terraform
 manages. A backend stores that state and, when supported, coordinates
 access using state locking.
 
-``` text
+```text
 Jenkins / Terraform CLI
         |
         | Reads and writes state
@@ -35,7 +54,7 @@ Five concepts matter:
 
 Suppose Terraform manages:
 
-``` hcl
+```hcl
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
 }
@@ -59,7 +78,7 @@ and other information Terraform needs to manage resources.
 
 A simplified snapshot might look like:
 
-``` json
+```json
 {
   "version": 4,
   "terraform_version": "1.x",
@@ -93,7 +112,7 @@ editing state JSON; use Terraform's state commands.
 Think of it as a unique identity assigned when a state is first created.
 As the state is updated, its lineage normally remains the same.
 
-``` text
+```text
 Initial state       lineage = abc-123    serial = 0
 After first update  lineage = abc-123    serial = 1
 After second update lineage = abc-123    serial = 2
@@ -102,7 +121,7 @@ After third update  lineage = abc-123    serial = 3
 
 Imagine trying to push a state from a different Terraform project:
 
-``` text
+```text
 State A: lineage = abc-123, serial = 15
 State B: lineage = xyz-789, serial = 5
 ```
@@ -121,7 +140,7 @@ lineage.**
 
 For example:
 
-``` text
+```text
 Snapshot 1: lineage = abc-123, serial = 10
 Snapshot 2: lineage = abc-123, serial = 11
 Snapshot 3: lineage = abc-123, serial = 12
@@ -135,7 +154,7 @@ snapshots are created.
 It helps Terraform detect an attempt to overwrite a newer state with an
 older one.
 
-``` text
+```text
 Local state:
   lineage = abc-123
   serial  = 10
@@ -169,7 +188,7 @@ the other's state changes.
 
 ### How locking works
 
-``` text
+```text
 Pipeline A                         Pipeline B
     |                                  |
     | Request state lock               | Request same state lock
@@ -195,7 +214,7 @@ targeting the same state cannot acquire the same lock simultaneously.
 When a lock is acquired, the backend returns a unique identifier for
 that active lock. A simplified lock record might look like:
 
-``` json
+```json
 {
   "ID": "a9c7-1234-lock-xyz",
   "Operation": "OperationTypeApply",
@@ -231,13 +250,13 @@ process crashes or unlocking fails, a stale lock may remain.
 After verifying that the original operation is no longer active, you can
 use:
 
-``` bash
+```bash
 terraform force-unlock LOCK_ID
 ```
 
 For example:
 
-``` bash
+```bash
 terraform force-unlock a9c7-1234-lock-xyz
 ```
 
@@ -250,7 +269,7 @@ stale and belongs to the failed operation.
 A state snapshot is a saved representation of the infrastructure
 Terraform currently tracks. Think of it as a checkpoint.
 
-``` text
+```text
 Snapshot 10: VPC and subnet recorded
 Snapshot 11: EC2 instance added to state
 Snapshot 12: Security group updated
@@ -283,7 +302,7 @@ helps recover old data; locking coordinates concurrent operations.
 
 Example S3 backend configuration:
 
-``` hcl
+```hcl
 terraform {
   backend "s3" {
     bucket       = "company-terraform-state"
@@ -301,7 +320,7 @@ locking mechanism depends on the backend and its configuration.
 
 1.  **Initialize the backend**
 
-    ``` bash
+    ```bash
     terraform init
     ```
 
@@ -312,7 +331,7 @@ locking mechanism depends on the backend and its configuration.
     Terraform retrieves the current snapshot from the backend. For
     example:
 
-    ``` text
+    ```text
     lineage = abc-123
     serial  = 12
     ```
@@ -338,7 +357,7 @@ locking mechanism depends on the backend and its configuration.
     Terraform persists an updated snapshot through the backend. For
     example:
 
-    ``` text
+    ```text
     Previous serial = 12
     Updated serial  = 13
     ```
@@ -349,7 +368,7 @@ locking mechanism depends on the backend and its configuration.
 
     Terraform releases the lock using the lock identifier.
 
-``` text
+```text
 Read state
     |
 Acquire lock
@@ -373,7 +392,7 @@ progress so Terraform can recover from partial failures.
 
 ### `terraform state pull`
 
-``` bash
+```bash
 terraform state pull
 ```
 
@@ -382,7 +401,7 @@ standard output.
 
 To save a backup:
 
-``` bash
+```bash
 terraform state pull > backup.tfstate
 ```
 
@@ -395,7 +414,7 @@ It retrieves the state data stored in the backend.
 
 ### `terraform state push`
 
-``` bash
+```bash
 terraform state push backup.tfstate
 ```
 
@@ -414,7 +433,7 @@ Terraform performs safety checks:
 
 Example:
 
-``` text
+```text
 Local state:
   lineage = abc-123
   serial  = 10
@@ -429,7 +448,7 @@ higher serial.
 
 You can bypass these checks with:
 
-``` bash
+```bash
 terraform state push -force backup.tfstate
 ```
 
@@ -461,7 +480,7 @@ No.
 Imagine Terraform successfully creates an AWS resource, but then
 encounters a network problem while saving the updated state to S3.
 
-``` text
+```text
 Terraform
     |
     | Creates EC2 instance successfully
@@ -496,7 +515,7 @@ creating duplicate or conflicting resources.
 
 Suppose the production state currently contains:
 
-``` text
+```text
 Lineage = abc-123
 Serial  = 20
 ```
@@ -510,7 +529,7 @@ A Jenkins deployment starts:
     `21`.
 5.  Terraform releases the lock using `lock-789`.
 
-``` text
+```text
 Before apply: serial 20
 After state update: serial 21
 Lineage: abc-123 throughout
