@@ -3,11 +3,30 @@
 Terraform is an **execution engine for infrastructure state
 transitions**.
 
+## Contents
+
+- [Practical mental model](#practical-mental-model)
+- [Main components](#main-components)
+- [What happens during \`terraform plan\`](#what-happens-during-terraform-plan)
+- [Terraform state: the center of the architecture](#terraform-state-the-center-of-the-architecture)
+- [Terraform Core builds a dependency graph](#terraform-core-builds-a-dependency-graph)
+- [Provider architecture](#provider-architecture)
+- [Modules are architecture boundaries](#modules-are-architecture-boundaries)
+- [Terraform execution lifecycle](#terraform-execution-lifecycle)
+- [Data sources versus managed resources](#data-sources-versus-managed-resources)
+- [What Terraform is not](#what-terraform-is-not)
+- [Production architecture on AWS](#production-architecture-on-aws)
+- [Senior DevOps production checklist](#senior-devops-production-checklist)
+- [The shortest accurate summary](#the-shortest-accurate-summary)
+- [Suggested next topics for senior-level understanding](#suggested-next-topics-for-senior-level-understanding)
+
+---
+
 You declare the target infrastructure in code; Terraform reads the
 current state, builds a dependency graph, creates a plan, and calls
 provider APIs to make reality match the declared state.
 
-``` mermaid
+```mermaid
 flowchart LR
     Code["Terraform code<br/>resources, modules, variables"] --> Core["Terraform Core<br/>parses code + builds graph + plans"]
     State["State backend<br/>S3 / HCP Terraform / Terraform Cloud"] <--> Core
@@ -19,49 +38,29 @@ flowchart LR
 
 ## Practical mental model
 
-``` text
+```text
 HCL configuration = intended infrastructure (Desired State)
 Provider APIs      = actual infrastructure
-State              = Terraform's memory of managed infrastructure (Current managerd Architecture)
+State              = Terraform's record of managed infrastructure (current recorded state)
 Terraform Core     = planner and orchestrator
 ```
 
 ## Main components
 
-  -----------------------------------------------------------------------
-  Component                           Senior DevOps interpretation
-  ----------------------------------- -----------------------------------
-  Terraform configuration             Desired-state definition:
-                                      resources, data sources, modules,
-                                      variables, and outputs
-
-  Terraform Core                      Binary that parses HCL, resolves
-                                      dependencies, calculates diffs, and
-                                      orchestrates changes
-
-  Providers                           Plugins that translate Terraform
-                                      actions into AWS, Kubernetes,
-                                      GitHub, and other API calls
-
-  State                               Inventory and resource identity
-                                      map; critical operational data
-
-  Backend                             Where Terraform stores state and,
-                                      usually, coordinates state locking
-
-  Modules                             Reusable infrastructure building
-                                      blocks with input/output contracts
-
-  Plan                                Proposed change set: create,
-                                      update, replace, destroy, or no-op
-
-  Registry                            Source of versioned providers and
-                                      modules
-  -----------------------------------------------------------------------
+| Component | Senior DevOps interpretation |
+| --- | --- |
+| Terraform configuration | Desired-state definition: resources, data sources, modules, variables, and outputs |
+| Terraform Core | Binary that parses HCL, resolves dependencies, calculates diffs, and orchestrates changes |
+| Providers | Plugins that translate Terraform actions into AWS, Kubernetes, GitHub, and other API calls |
+| State | Inventory and resource identity map; critical operational data |
+| Backend | Where Terraform stores state and, usually, coordinates state locking |
+| Modules | Reusable infrastructure building blocks with input/output contracts |
+| Plan | Proposed change set: create, update, replace, destroy, or no-op |
+| Registry | Source of versioned providers and modules |
 
 ## What happens during `terraform plan`
 
-``` mermaid
+```mermaid
 sequenceDiagram
     participant C as Terraform Core
     participant S as State Backend
@@ -86,7 +85,7 @@ Terraform evaluates three sources of information:
 
 For example:
 
-``` text
+```text
 Configuration: desired_instances = 3
 State:         3 instances managed
 AWS API:       only 2 instances exist
@@ -107,7 +106,7 @@ State answers questions such as:
 
 Example mapping:
 
-``` text
+```text
 aws_instance.web[0]
         |
         v
@@ -128,7 +127,7 @@ versions support S3-native lockfiles (`use_lockfile`); DynamoDB-based
 locking is the older approach and is deprecated in current S3 backend
 guidance.
 
-``` text
+```text
 Engineer A ──┐
              ├── remote state + lock ── AWS
 CI pipeline ─┘
@@ -147,7 +146,7 @@ remove the value from state.
 Terraform does not execute resources in the order they appear in a file.
 It constructs a dependency graph.
 
-``` hcl
+```hcl
 resource "aws_vpc" "main" {}
 
 resource "aws_subnet" "app" {
@@ -161,7 +160,7 @@ resource "aws_instance" "app" {
 
 Terraform infers the dependency chain:
 
-``` text
+```text
 VPC -> Subnet -> EC2 instance
 ```
 
@@ -173,7 +172,7 @@ determine the required ordering.
 Use `depends_on` only when Terraform cannot infer a dependency through
 an expression reference.
 
-``` hcl
+```hcl
 depends_on = [aws_iam_role_policy.example]
 ```
 
@@ -185,7 +184,7 @@ reduce parallelism.
 
 Providers are separate, versioned plugins.
 
-``` text
+```text
 Terraform Core
     ├── hashicorp/aws provider       -> AWS APIs
     ├── hashicorp/kubernetes         -> Kubernetes API
@@ -214,7 +213,7 @@ CI runners use consistent provider selections and checksums.
 
 A module is similar to an internal platform API.
 
-``` text
+```text
 modules/
 ├── vpc/
 ├── eks/
@@ -229,7 +228,7 @@ environments/
 
 A good module exposes a small, stable contract:
 
-``` hcl
+```hcl
 module "vpc" {
   source = "git::https://github.com/acme/terraform-aws-vpc.git?ref=v3.2.1"
 
@@ -248,7 +247,7 @@ functionality through versioned modules.
 
 ## Terraform execution lifecycle
 
-``` text
+```text
 terraform init
     |
     v
@@ -272,7 +271,7 @@ Execute approved plan and persist state changes
 
 ### Typical CI/CD workflow
 
-``` text
+```text
 Pull request
     |
     v
@@ -297,7 +296,7 @@ plan after approval.
 
 A managed resource is something Terraform is responsible for managing:
 
-``` hcl
+```hcl
 resource "aws_s3_bucket" "logs" {
   bucket = "acme-production-logs"
 }
@@ -305,7 +304,7 @@ resource "aws_s3_bucket" "logs" {
 
 A data source reads information about an existing object:
 
-``` hcl
+```hcl
 data "aws_vpc" "existing" {
   tags = {
     Name = "shared-network"
@@ -322,7 +321,7 @@ infrastructure.
 Terraform is not a continuously running reconciliation controller in the
 same way Kubernetes controllers or Argo CD are.
 
-``` text
+```text
 Terraform:
 plan/apply runs -> changes infrastructure -> exits
 
@@ -338,7 +337,7 @@ drift visibility is required.
 
 A practical setup looks like this:
 
-``` text
+```text
 GitHub / GitLab
     |
     v
@@ -366,7 +365,7 @@ credentials in CI.
 Separate state by environment, account, region, or system boundary. For
 example:
 
-``` text
+```text
 s3://acme-terraform-state/
 ├── networking/prod/terraform.tfstate
 ├── platform/prod/terraform.tfstate
@@ -404,30 +403,11 @@ frequency.
 
 ## Suggested next topics for senior-level understanding
 
-  -----------------------------------------------------------------------
-  Topic                               Why it matters in production
-  ----------------------------------- -----------------------------------
-  State internals                     Understand lineage, serial numbers,
-                                      resource instances, imports, and
-                                      recovery
-
-  Graph internals                     Understand graph construction,
-                                      parallelism, dependencies, and
-                                      replacement ordering
-
-  Provider internals                  Understand plugin protocol, RPC,
-                                      schemas, and resource lifecycle
-
-  Lifecycle management                Understand `create_before_destroy`,
-                                      `prevent_destroy`,
-                                      `ignore_changes`, and replacement
-                                      behavior
-
-  State operations                    Understand `terraform import`,
-                                      `moved` blocks, `state mv`, and
-                                      safe refactoring
-
-  CI/CD controls                      Understand saved plans, approvals,
-                                      OIDC, policy checks, and drift
-                                      detection
-  -----------------------------------------------------------------------
+| Topic | Why it matters in production |
+| --- | --- |
+| State internals | Understand lineage, serial numbers, resource instances, imports, and recovery |
+| Graph internals | Understand graph construction, parallelism, dependencies, and replacement ordering |
+| Provider internals | Understand plugin protocol, RPC, schemas, and resource lifecycle |
+| Lifecycle management | Understand `create_before_destroy`, `prevent_destroy`, `ignore_changes`, and replacement behavior |
+| State operations | Understand `terraform import`, `moved` blocks, `state mv`, and safe refactoring |
+| CI/CD controls | Understand saved plans, approvals, OIDC, policy checks, and drift detection |

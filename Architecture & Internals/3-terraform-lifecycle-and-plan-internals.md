@@ -1,11 +1,23 @@
 # Terraform Lifecycle and What Happens During `terraform plan`
 
+## Contents
+
+- [Part 1: Terraform end-to-end lifecycle](#part-1-terraform-end-to-end-lifecycle)
+- [Part 2: What happens internally during \`terraform plan\`?](#part-2-what-happens-internally-during-terraform-plan)
+- [Part 3: Refresh vs graph construction vs diff vs planning](#part-3-refresh-vs-graph-construction-vs-diff-vs-planning)
+- [Part 4: What happens during \`terraform apply\`?](#part-4-what-happens-during-terraform-apply)
+- [Part 5: Plan and apply in a DevOps CI/CD pipeline](#part-5-plan-and-apply-in-a-devops-cicd-pipeline)
+- [Part 6: Useful commands](#part-6-useful-commands)
+- [Final mental model](#final-mental-model)
+
+---
+
 ## Part 1: Terraform end-to-end lifecycle
 
 Terraform takes infrastructure from declarative configuration to
 provisioned and managed resources.
 
-``` mermaid
+```mermaid
 flowchart TD
     A["Write HCL configuration"] --> B["terraform init"]
     B --> C["terraform fmt"]
@@ -54,28 +66,19 @@ provider reads, dependency analysis, and change calculation.
 
 ### Main participants
 
-  -----------------------------------------------------------------------
-  Participant                         Responsibility
-  ----------------------------------- -----------------------------------
-  Terraform Core                      Coordinates the planning process
-
-  Configuration                       Describes desired infrastructure
-
-  State backend                       Provides the existing Terraform
-                                      state and locking where supported
-
-  Provider plugin                     Reads remote resources and supplies
-                                      provider-specific resource behavior
-
-  Cloud or SaaS APIs                  Return information about actual
-                                      infrastructure
-  -----------------------------------------------------------------------
+| Participant | Responsibility |
+| --- | --- |
+| Terraform Core | Coordinates the planning process |
+| Configuration | Describes desired infrastructure |
+| State backend | Provides the existing Terraform state and locking where supported |
+| Provider plugin | Reads remote resources and supplies provider-specific resource behavior |
+| Cloud or SaaS APIs | Return information about actual infrastructure |
 
 ### Step 1: Load and evaluate configuration
 
 When you execute:
 
-``` bash
+```bash
 terraform plan
 ```
 
@@ -91,7 +94,7 @@ Terraform loads and processes configuration such as:
 
 Example:
 
-``` hcl
+```hcl
 resource "aws_instance" "web" {
   ami           = "ami-12345678"
   instance_type = "t3.micro"
@@ -111,7 +114,7 @@ locking has not been disabled.
 It also starts the required provider plugin processes and configures
 them.
 
-``` text
+```text
 Terraform Core
       |
       | Terraform Plugin Protocol
@@ -132,7 +135,7 @@ their latest attributes.
 
 For example:
 
-``` text
+```text
 Configuration: desired_instances = 3
 Previous state: instances managed = 3
 AWS API: actual instances found = 2
@@ -163,7 +166,7 @@ dependencies.
 
 Example:
 
-``` hcl
+```hcl
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
 }
@@ -182,7 +185,7 @@ resource "aws_instance" "web" {
 
 The dependency relationship is:
 
-``` text
+```text
 VPC -> Subnet -> EC2 instance
 ```
 
@@ -194,7 +197,7 @@ reused unchanged.
 Independent operations can often run concurrently, subject to dependency
 constraints and the configured parallelism limit.
 
-``` bash
+```bash
 terraform plan -parallelism=10
 ```
 
@@ -214,27 +217,25 @@ situation toward the declared configuration.
 
 Example:
 
-  Attribute        Desired configuration   Actual infrastructure
-  ---------------- ----------------------- -----------------------
-  Instance type    `t3.small`              `t3.micro`
-  AMI              `ami-new`               `ami-old`
-  Instance count   3                       2
-
+| Attribute | Desired configuration | Actual infrastructure |
+| --- | --- | --- |
+| Instance type | `t3.small` | `t3.micro` |
+| AMI | `ami-new` | `ami-old` |
+| Instance count | 3 | 2 |
 The provider's resource schema and planning behavior determine whether
 an attribute change can be updated in place or requires replacement.
 Terraform Core coordinates the resulting planned actions.
 
 Common plan symbols:
 
-  Symbol   Meaning
-  -------- -----------------------------------------------------
-  `+`      Create
-  `-`      Destroy
-  `~`      Update in place
-  `-/+`    Destroy and then create replacement
-  `+/-`    Create replacement before destroying the old object
-  `<=`     Read a data source
-
+| Symbol | Meaning |
+| --- | --- |
+| `+` | Create |
+| `-` | Destroy |
+| `~` | Update in place |
+| `-/+` | Destroy and then create replacement |
+| `+/-` | Create replacement before destroying the old object |
+| `<=` | Read a data source |
 Not every provider or resource supports in-place updates for every
 attribute.
 
@@ -245,7 +246,7 @@ dependencies.
 
 Example:
 
-``` text
+```text
 Terraform will perform the following actions:
 
   # aws_instance.web will be created
@@ -261,13 +262,13 @@ the EC2 instance.
 
 You can save the plan:
 
-``` bash
+```bash
 terraform plan -out=tfplan
 ```
 
 A saved plan can be reviewed and then applied:
 
-``` bash
+```bash
 terraform apply tfplan
 ```
 
@@ -278,29 +279,16 @@ other sensitive infrastructure artifacts.
 
 These concepts are related, but they are not interchangeable.
 
-  -----------------------------------------------------------------------
-  Concept                 What it does            Main question
-  ----------------------- ----------------------- -----------------------
-  Refresh                 Reads current remote    What exists right now?
-                          resource information    
-                          through providers       
-
-  Graph construction      Represents dependencies What depends on what?
-                          and operation ordering  
-
-  Diff calculation        Determines changes      What is different?
-                          needed to move toward   
-                          configuration           
-
-  Planning                Combines proposed       What operations should
-                          actions, dependencies,  be performed?
-                          and ordering into a     
-                          plan                    
-  -----------------------------------------------------------------------
+| Concept | What it does | Main question |
+| --- | --- | --- |
+| Refresh | Reads current remote resource information through providers | What exists right now? |
+| Graph construction | Represents dependencies and operation ordering | What depends on what? |
+| Diff calculation | Determines changes needed to move toward configuration | What is different? |
+| Planning | Combines proposed actions, dependencies, and ordering into a plan | What operations should be performed? |
 
 A useful simplified mental model:
 
-``` text
+```text
 Configuration + Prior State
           |
           v
@@ -327,20 +315,20 @@ data-source reads, and multiple graph walks.
 
 After approval, run:
 
-``` bash
+```bash
 terraform apply
 ```
 
 Or, for an approved saved plan:
 
-``` bash
+```bash
 terraform apply tfplan
 ```
 
 Terraform Core coordinates the planned operations and invokes provider
 operations through the plugin protocol.
 
-``` text
+```text
 Terraform Core
       |
       | RPC / gRPC
@@ -368,7 +356,7 @@ regenerated.
 
 ## Part 5: Plan and apply in a DevOps CI/CD pipeline
 
-``` mermaid
+```mermaid
 flowchart TD
     A["Developer pushes Terraform code"] --> B["Pull request"]
     B --> C["terraform fmt -check"]
@@ -399,35 +387,18 @@ Production recommendations:
 
 ## Part 6: Useful commands
 
-  -----------------------------------------------------------------------
-  Command                             Purpose
-  ----------------------------------- -----------------------------------
-  `terraform init`                    Initialize backend, providers, and
-                                      modules
-
-  `terraform fmt`                     Format HCL
-
-  `terraform validate`                Validate configuration
-
-  `terraform plan`                    Refresh and calculate proposed
-                                      changes
-
-  `terraform plan -out=tfplan`        Save a plan artifact
-
-  `terraform show tfplan`             Inspect a saved plan
-
-  `terraform apply`                   Plan interactively and apply after
-                                      approval
-
-  `terraform apply tfplan`            Apply a saved plan
-
-  `terraform plan -refresh-only`      Preview state updates based on
-                                      remote changes without proposing
-                                      configuration-driven infrastructure
-                                      changes
-
-  `terraform apply -refresh-only`     Apply refresh-only state updates
-  -----------------------------------------------------------------------
+| Command | Purpose |
+| --- | --- |
+| `terraform init` | Initialize backend, providers, and modules |
+| `terraform fmt` | Format HCL |
+| `terraform validate` | Validate configuration |
+| `terraform plan` | Refresh and calculate proposed changes |
+| `terraform plan -out=tfplan` | Save a plan artifact |
+| `terraform show tfplan` | Inspect a saved plan |
+| `terraform apply` | Plan interactively and apply after approval |
+| `terraform apply tfplan` | Apply a saved plan |
+| `terraform plan -refresh-only` | Preview state updates based on remote changes without proposing configuration-driven infrastructure changes |
+| `terraform apply -refresh-only` | Apply refresh-only state updates |
 
 ## Final mental model
 

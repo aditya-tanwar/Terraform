@@ -1,5 +1,15 @@
 # Terraform Variables and Data Types
 
+## Contents
+
+- [Part 1: Variable declarations](#part-1-variable-declarations)
+- [Part 2: Terraform data types](#part-2-terraform-data-types)
+- [Part 3: Summary tables](#part-3-summary-tables)
+- [Part 4: What matters most for senior DevOps interviews?](#part-4-what-matters-most-for-senior-devops-interviews)
+- [Final mental model](#final-mental-model)
+
+---
+
 Terraform concepts described as "types of variables" can refer to two
 things:
 
@@ -15,7 +25,7 @@ things:
 Input variables make a module configurable. Think of them as function
 parameters.
 
-``` hcl
+```hcl
 variable "instance_type" {
   type    = string
   default = "t3.micro"
@@ -24,7 +34,7 @@ variable "instance_type" {
 
 Use one in a resource:
 
-``` hcl
+```hcl
 resource "aws_instance" "web" {
   instance_type = var.instance_type
 }
@@ -36,7 +46,7 @@ Reference it with `var.instance_type`.
 
 Locals store computed or reusable expressions and help avoid repetition.
 
-``` hcl
+```hcl
 locals {
   bucket_name = "${var.project}-${var.environment}"
 }
@@ -44,7 +54,7 @@ locals {
 
 Use and reference the value:
 
-``` hcl
+```hcl
 resource "aws_s3_bucket" "logs" {
   bucket = local.bucket_name
 }
@@ -58,7 +68,7 @@ inside a function.
 Outputs expose selected values from a module. They are useful when one
 module needs to provide information to another.
 
-``` hcl
+```hcl
 output "vpc_id" {
   value = aws_vpc.main.id
 }
@@ -66,13 +76,13 @@ output "vpc_id" {
 
 After applying, inspect outputs:
 
-``` bash
+```bash
 terraform output
 ```
 
 Example:
 
-``` text
+```text
 vpc_id = "vpc-123456"
 ```
 
@@ -81,13 +91,13 @@ vpc_id = "vpc-123456"
 Operating system environment variables can provide values for Terraform
 input variables.
 
-``` bash
+```bash
 export TF_VAR_region=us-east-1
 ```
 
 Terraform maps this to the input variable named `region`:
 
-``` hcl
+```hcl
 variable "region" {
   type = string
 }
@@ -101,7 +111,7 @@ Data sources read information about existing infrastructure or external
 data. They do not declare input variables and do not manage the
 lifecycle of the objects they read.
 
-``` hcl
+```hcl
 data "aws_ami" "ubuntu" {
   most_recent = true
 
@@ -112,7 +122,7 @@ data "aws_ami" "ubuntu" {
 
 Use the returned AMI ID:
 
-``` hcl
+```hcl
 ami = data.aws_ami.ubuntu.id
 ```
 
@@ -130,7 +140,7 @@ value they accept.
 
 A string represents text.
 
-``` hcl
+```hcl
 variable "name" {
   type = string
 }
@@ -142,7 +152,7 @@ Example: `name = "production"`
 
 A number can be an integer or a floating-point value.
 
-``` hcl
+```hcl
 variable "cpu" {
   type = number
 }
@@ -154,7 +164,7 @@ Example: `cpu = 4` or `cpu = 3.14`
 
 A boolean represents either `true` or `false`.
 
-``` hcl
+```hcl
 variable "public" {
   type = bool
 }
@@ -166,7 +176,7 @@ Example: `public = true`
 
 A list is an ordered collection of values of the same element type.
 
-``` hcl
+```hcl
 variable "subnets" {
   type = list(string)
 }
@@ -174,7 +184,7 @@ variable "subnets" {
 
 Example:
 
-``` hcl
+```hcl
 subnets = [
   "subnet-1",
   "subnet-2"
@@ -188,7 +198,7 @@ Access an element using its zero-based index: `var.subnets[0]`.
 A set is a collection of unique values. Unlike a list, it does not
 provide stable positional ordering.
 
-``` hcl
+```hcl
 variable "regions" {
   type = set(string)
 }
@@ -196,7 +206,7 @@ variable "regions" {
 
 Example:
 
-``` hcl
+```hcl
 regions = [
   "us-east-1",
   "us-west-2"
@@ -205,7 +215,7 @@ regions = [
 
 Duplicate values are discarded when converted to a set. For example:
 
-``` hcl
+```hcl
 toset(["us-east-1", "us-west-2", "us-east-1"])
 ```
 
@@ -214,7 +224,7 @@ toset(["us-east-1", "us-west-2", "us-east-1"])
 A map is a collection of key-value pairs. In `map(string)`, each value
 must be a string.
 
-``` hcl
+```hcl
 variable "tags" {
   type = map(string)
 }
@@ -222,7 +232,7 @@ variable "tags" {
 
 Example:
 
-``` hcl
+```hcl
 tags = {
   Environment = "prod"
   Owner       = "DevOps"
@@ -236,7 +246,7 @@ Access a value by key: `var.tags["Environment"]`.
 An object is a structured value with named attributes. Each attribute
 has its own declared type.
 
-``` hcl
+```hcl
 variable "server" {
   type = object({
     cpu    = number
@@ -248,7 +258,7 @@ variable "server" {
 
 Example:
 
-``` hcl
+```hcl
 server = {
   cpu    = 4
   memory = 16
@@ -266,7 +276,7 @@ structured configuration.
 A tuple is an ordered collection in which each position can have a
 different type.
 
-``` hcl
+```hcl
 variable "config" {
   type = tuple([
     string,
@@ -278,7 +288,7 @@ variable "config" {
 
 Example:
 
-``` hcl
+```hcl
 config = [
   "prod",
   4,
@@ -294,7 +304,7 @@ boolean.
 `any` is a special type constraint that lets Terraform infer a suitable
 type for the supplied value.
 
-``` hcl
+```hcl
 variable "value" {
   type = any
 }
@@ -309,42 +319,27 @@ easier to validate and understand.
 
 ### Variable declarations and related constructs
 
-  ----------------------------------------------------------------------------------
-  Construct               Purpose                 How to reference or use it
-  ----------------------- ----------------------- ----------------------------------
-  Input variable          Accept input for a      `var.name`
-  (`variable`)            module                  
-
-  Local value (`locals`)  Store computed or       `local.name`
-                          reusable values         
-
-  Output value (`output`) Expose a value from a   `terraform output`; callers use
-                          module                  `module.<name>.<output>`
-
-  Environment variable    Supply an input         Becomes the corresponding
-  (`TF_VAR_*`)            variable through the    `var.name`
-                          environment             
-
-  Data source (`data`)    Read existing           `data.<type>.<name>.<attribute>`
-                          infrastructure or       
-                          external information    
-  ----------------------------------------------------------------------------------
+| Construct | Purpose | How to reference or use it |
+| --- | --- | --- |
+| Input variable (`variable`) | Accept input for a module | `var.name` |
+| Local value (`locals`) | Store computed or reusable values | `local.name` |
+| Output value (`output`) | Expose a value from a module | `terraform output`; callers use `module.<name>.<output>` |
+| Environment variable (`TF_VAR_*`) | Supply an input variable through the environment | Becomes the corresponding `var.name` |
+| Data source (`data`) | Read existing infrastructure or external information | `data.<type>.<name>.<attribute>` |
 
 ### Data types
 
-  Data type         Example
-  ----------------- ----------------------------------------------------
-  `string`          `"prod"`
-  `number`          `4`, `3.14`
-  `bool`            `true`
-  `list(string)`    `["a", "b"]`
-  `set(string)`     `toset(["a", "b"])`
-  `map(string)`     `{ key = "value" }`
-  `object({...})`   `{ cpu = 4, os = "linux" }`
-  `tuple([...])`    `["prod", 4, true]`
-  `any`             Any value accepted by the inferred type constraint
-
-------------------------------------------------------------------------
+| Data type | Example |
+| --- | --- |
+| `string` | `"prod"` |
+| `number` | `4`, `3.14` |
+| `bool` | `true` |
+| `list(string)` | `["a", "b"]` |
+| `set(string)` | `toset(["a", "b"])` |
+| `map(string)` | `{ key = "value" }` |
+| `object({...})` | `{ cpu = 4, os = "linux" }` |
+| `tuple([...])` | `["prod", 4, true]` |
+| `any` | Any value accepted by the inferred type constraint |
 
 ## Part 4: What matters most for senior DevOps interviews?
 
