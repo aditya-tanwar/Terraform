@@ -1,6 +1,5 @@
 # Terraform Learning and Infrastructure Modules
 
-> **📚 Interactive documentation website:** [Explore the Terraform Engineering learning site](https://aditya-tanwar.github.io/Terraform/) for a polished, searchable reading experience covering the **Architecture & Internals** guides. The site is built and published automatically with GitHub Pages.
 
 A practical Terraform learning repository covering Terraform internals, state management, execution planning, provider communication, backends, and reusable infrastructure modules.
 
