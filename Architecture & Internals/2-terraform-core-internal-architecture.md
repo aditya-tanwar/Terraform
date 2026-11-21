@@ -146,8 +146,7 @@ responsibilities.
                                       configured backend
   -----------------------------------------------------------------------
 
-For example, Terraform Core does not implement the AWS API operation for creating an EC2 instance. It determines the required resource operation and delegates the provider-specific work to the AWS provider. It determines that a resource operation is
-required and delegates the platform-specific work to the AWS provider.
+For example, Terraform Core does not know how to create an EC2 instance at the AWS API level. It determines that a resource operation is required and delegates the platform-specific work to the AWS provider.
 
 ## 4. Complete conceptual architecture
 
