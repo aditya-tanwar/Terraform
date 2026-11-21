@@ -1,0 +1,15 @@
+{
+  "name": "terraform-engineering-docs",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "sync:guides": "node scripts/sync-guides.mjs",
+    "predev": "npm run sync:guides",
+    "dev": "vitepress dev .",
+    "prebuild": "npm run sync:guides",
+    "docs:build": "vitepress build .",
+    "preview": "vitepress preview ."
+  },
+  "devDependencies": { "vitepress": "^1.6.4" }
+}
