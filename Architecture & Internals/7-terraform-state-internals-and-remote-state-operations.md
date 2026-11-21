@@ -457,7 +457,6 @@ state and understand exactly which state you are replacing before using
 
 No.
 
-  -----------------------------------------------------------------------
 | Command | What it does |
 | --- | --- |
 | `terraform state pull` | Reads state from the backend |
@@ -538,7 +537,6 @@ dependencies and shared infrastructure between those configurations.
 
 ## 11. Practical commands to remember
 
-  -----------------------------------------------------------------------
 | Command | Purpose |
 | --- | --- |
 | `terraform state pull` | Retrieve the current state |
