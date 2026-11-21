@@ -559,30 +559,16 @@ does not mean the value is absent from state.
 
 For S3, consider:
 
-  -----------------------------------------------------------------------
-  Protection                          Why it matters
-  ----------------------------------- -----------------------------------
-  Block Public Access                 Prevents accidental public exposure
-
-  Least-privilege IAM                 Limits who can read, write, or
-                                      delete state
-
-  Bucket versioning                   Allows recovery of earlier state
-                                      versions
-
-  Server-side encryption              Protects stored state
-
-  KMS encryption                      Adds customer-managed key control
-                                      and auditability
-
-  TLS                                 Protects data in transit
-
-  CloudTrail data events              Can help audit S3 object access
-                                      when configured
-
-  Separate state paths                Limits accidental cross-environment
-                                      access
-  -----------------------------------------------------------------------
+| Protection | Why it matters |
+|---|---|
+| Block Public Access | Prevents accidental public exposure |
+| Least-privilege IAM | Limits who can read, write, or delete state |
+| Bucket versioning | Allows recovery of earlier state versions |
+| Server-side encryption | Protects stored state |
+| KMS encryption | Adds customer-managed key control and auditability |
+| TLS | Protects data in transit |
+| CloudTrail data events | Can help audit S3 object access when configured |
+| Separate state paths | Limits accidental cross-environment access |
 
 Example:
 
