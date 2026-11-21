@@ -67,12 +67,11 @@ Instance type: t3.medium
 
 Terraform now has three different views:
 
-  Source                      Instance type
-  --------------------------- ---------------
-  Terraform configuration     `t3.small`
-  Previous Terraform state    `t3.small`
-  Actual AWS infrastructure   `t3.medium`
-
+| Source | Instance type |
+| --- | --- |
+| Terraform configuration | `t3.small` |
+| Previous Terraform state | `t3.small` |
+| Actual AWS infrastructure | `t3.medium` |
 This difference is called **configuration drift**.
 
 ## 2. What happens when you run `terraform plan`?
@@ -140,12 +139,11 @@ response into Terraform resource data.
 
 ## 3. Terraform compares three sources
 
-  Source               Value         What it represents
-  -------------------- ------------- ------------------------------
-  Configuration        `t3.small`    Desired infrastructure
-  Previous state       `t3.small`    Last recorded information
-  Refreshed AWS data   `t3.medium`   Actual remote infrastructure
-
+| Source | Value | What it represents |
+| --- | --- | --- |
+| Configuration | `t3.small` | Desired infrastructure |
+| Previous state | `t3.small` | Last recorded information |
+| Refreshed AWS data | `t3.medium` | Actual remote infrastructure |
 Terraform detects that the remote instance differs from the declared
 configuration.
 
@@ -187,16 +185,15 @@ reverting those changes to match the configuration.
 
 ## 5. Common questions
 
-  Question                                                       Answer
-  -------------------------------------------------------------- ------------------
-  Does Terraform read the state file?                            Yes
-  Does Terraform treat state as a live view of AWS?              No
-  Who reads actual remote infrastructure?                        The provider
-  Who calls AWS APIs?                                            The AWS provider
-  Who coordinates comparison and planning?                       Terraform Core
-  Does a normal `terraform plan` apply infrastructure changes?   No
-  Does a successful apply persist resulting state?               Yes
-
+| Question | Answer |
+| --- | --- |
+| Does Terraform read the state file? | Yes |
+| Does Terraform treat state as a live view of AWS? | No |
+| Who reads actual remote infrastructure? | The provider |
+| Who calls AWS APIs? | The AWS provider |
+| Who coordinates comparison and planning? | Terraform Core |
+| Does a normal `terraform plan` apply infrastructure changes? | No |
+| Does a successful apply persist resulting state? | Yes |
 ## Final mental model
 
 > State is Terraform's last recorded view of managed infrastructure, not
@@ -217,12 +214,11 @@ miss changes made manually outside Terraform.
 
 Suppose you have an EC2 instance managed by Terraform.
 
-  Source                            EC2 instance type
-  --------------------------------- -------------------
-  Terraform configuration (`.tf`)   `t2.small`
-  Terraform state (`tfstate`)       `t2.small`
-  Actual EC2 instance in AWS        `t2.small`
-
+| Source | EC2 instance type |
+| --- | --- |
+| Terraform configuration (`.tf`) | `t2.small` |
+| Terraform state (`tfstate`) | `t2.small` |
+| Actual EC2 instance in AWS | `t2.small` |
 Terraform configuration describes the desired infrastructure. The state
 file records Terraform's last-known mapping and attributes for managed
 resources. AWS contains the real infrastructure.
@@ -232,12 +228,11 @@ resources. AWS contains the real infrastructure.
 Someone changes the instance type directly in AWS from `t2.small` to
 `t2.medium`, outside Terraform.
 
-  Source                             EC2 instance type
-  ---------------------------------- -------------------
-  Terraform configuration            `t2.small`
-  Terraform state (before refresh)   `t2.small`
-  Actual EC2 instance in AWS         `t2.medium`
-
+| Source | EC2 instance type |
+| --- | --- |
+| Terraform configuration | `t2.small` |
+| Terraform state (before refresh) | `t2.small` |
+| Actual EC2 instance in AWS | `t2.medium` |
 This difference is an example of **configuration drift**.
 
 ## 3. What Happens During Refresh?
@@ -255,12 +250,11 @@ attributes.
 
 Terraform discovers that the actual instance type is `t2.medium`.
 
-  Source                       EC2 instance type
-  ---------------------------- -------------------
-  Terraform configuration      `t2.small`
-  Refreshed state view         `t2.medium`
-  Actual EC2 instance in AWS   `t2.medium`
-
+| Source | EC2 instance type |
+| --- | --- |
+| Terraform configuration | `t2.small` |
+| Refreshed state view | `t2.medium` |
+| Actual EC2 instance in AWS | `t2.medium` |
 **Important:** Refresh reads the remote object and updates Terraform's
 state view. It does not itself change the EC2 instance in AWS.
 
@@ -304,12 +298,11 @@ state.
 
 The intended final result is:
 
-  Source                       EC2 instance type
-  ---------------------------- -------------------
-  Terraform configuration      `t2.small`
-  Terraform state              `t2.small`
-  Actual EC2 instance in AWS   `t2.small`
-
+| Source | EC2 instance type |
+| --- | --- |
+| Terraform configuration | `t2.small` |
+| Terraform state | `t2.small` |
+| Actual EC2 instance in AWS | `t2.small` |
 You can also use:
 
 ```bash
@@ -353,21 +346,11 @@ propose reconciling AWS back to `t2.small`.
 ## 7. The Three Operations to Remember
 
   -----------------------------------------------------------------------
-  Operation                           What it does
-  ----------------------------------- -----------------------------------
-  Refresh                             Reads remote infrastructure and
-                                      updates Terraform's view/state
-                                      information
-
-  Plan                                Compares desired configuration with
-                                      refreshed infrastructure
-                                      information and calculates proposed
-                                      actions
-
-  Apply                               Executes the approved actions and
-                                      updates state after successful
-                                      operations
-  -----------------------------------------------------------------------
+| Operation | What it does |
+| --- | --- |
+| Refresh | Reads remote infrastructure and updates Terraform's view/state information |
+| Plan | Compares desired configuration with refreshed infrastructure information and calculates proposed actions |
+| Apply | Executes the approved actions and updates state after successful operations |
 
 A useful mental model:
 
