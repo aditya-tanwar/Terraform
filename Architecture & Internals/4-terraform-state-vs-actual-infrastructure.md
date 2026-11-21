@@ -1,5 +1,26 @@
 # Terraform State vs Actual Infrastructure: Understanding Refresh
 
+## Contents
+
+- [The key idea](#the-key-idea)
+- [1. Example: An EC2 instance changes outside Terraform](#1-example-an-ec2-instance-changes-outside-terraform)
+- [2. What happens when you run \`terraform plan\`?](#2-what-happens-when-you-run-terraform-plan)
+- [3. Terraform compares three sources](#3-terraform-compares-three-sources)
+- [4. What happens to the state file?](#4-what-happens-to-the-state-file)
+- [5. Common questions](#5-common-questions)
+- [Final mental model](#final-mental-model)
+- [1. Starting Point: Everything Is in Sync](#1-starting-point-everything-is-in-sync)
+- [2. Someone Manually Changes the EC2 Instance](#2-someone-manually-changes-the-ec2-instance)
+- [3. What Happens During Refresh?](#3-what-happens-during-refresh)
+- [4. What Happens During Planning?](#4-what-happens-during-planning)
+- [5. What Happens During Apply?](#5-what-happens-during-apply)
+- [6. Detect Drift Without Correcting the Infrastructure](#6-detect-drift-without-correcting-the-infrastructure)
+- [7. The Three Operations to Remember](#7-the-three-operations-to-remember)
+- [8. Important Syntax Note](#8-important-syntax-note)
+- [9. Key Takeaway](#9-key-takeaway)
+
+---
+
 ## The key idea
 
 Terraform **does use the state file to understand the resources it
@@ -21,7 +42,7 @@ Terraform uses these sources together when calculating a plan.
 
 Suppose your Terraform configuration declares:
 
-``` hcl
+```hcl
 resource "aws_instance" "web" {
   instance_type = "t3.small"
 }
@@ -29,7 +50,7 @@ resource "aws_instance" "web" {
 
 The Terraform state file previously recorded:
 
-``` json
+```json
 {
   "address": "aws_instance.web",
   "id": "i-123456789",
@@ -39,7 +60,7 @@ The Terraform state file previously recorded:
 
 But someone manually changes the EC2 instance type in the AWS Console:
 
-``` text
+```text
 Instance ID:   i-123456789
 Instance type: t3.medium
 ```
@@ -71,7 +92,7 @@ The state tells Terraform:
 
 For example:
 
-``` text
+```text
 Terraform resource address: aws_instance.web
 AWS resource ID:             i-123456789
 Previously recorded type:    t3.small
@@ -85,7 +106,7 @@ instance.
 The provider calls AWS APIs and returns the current resource
 information.
 
-``` text
+```text
 Terraform Core
       |
       | Read previous state
@@ -147,7 +168,7 @@ There is an important distinction between planning and applying.
 
 You can also run:
 
-``` bash
+```bash
 terraform plan -refresh-only
 ```
 
@@ -156,7 +177,7 @@ without proposing configuration-driven infrastructure changes.
 
 To apply those state updates:
 
-``` bash
+```bash
 terraform apply -refresh-only
 ```
 
@@ -224,7 +245,7 @@ This difference is an example of **configuration drift**.
 A normal `terraform plan` refreshes managed resources by default. You
 can also explicitly request it:
 
-``` bash
+```bash
 terraform plan -refresh=true
 ```
 
@@ -255,7 +276,7 @@ Terraform proposes changing the instance type back to `t2.small`.
 
 Conceptually, the plan may show:
 
-``` hcl
+```hcl
 ~ resource "aws_instance" "app" {
     instance_type = "t2.medium" -> "t2.small"
 }
@@ -269,7 +290,7 @@ changed.
 
 Run:
 
-``` bash
+```bash
 terraform apply
 ```
 
@@ -291,7 +312,7 @@ The intended final result is:
 
 You can also use:
 
-``` bash
+```bash
 terraform apply -auto-approve
 ```
 
@@ -302,7 +323,7 @@ automation and review controls make that appropriate.
 
 To inspect proposed changes without applying them:
 
-``` bash
+```bash
 terraform plan
 ```
 
@@ -312,7 +333,7 @@ not apply them.
 To preview how Terraform state would be updated to reflect the real
 infrastructure, use:
 
-``` bash
+```bash
 terraform plan -refresh-only
 ```
 
@@ -321,7 +342,7 @@ changing remote infrastructure to match the configuration.
 
 To persist the refreshed state information:
 
-``` bash
+```bash
 terraform apply -refresh-only
 ```
 
@@ -350,7 +371,7 @@ propose reconciling AWS back to `t2.small`.
 
 A useful mental model:
 
-``` text
+```text
 Terraform configuration
        |
        | desired value: t2.small
@@ -375,13 +396,13 @@ Terraform Core <------> AWS Provider <------> AWS API
 
 Use a single hyphen for Terraform CLI options:
 
-``` bash
+```bash
 terraform plan -refresh=true
 ```
 
 Not:
 
-``` bash
+```bash
 terraform apply --refresh=true
 ```
 
