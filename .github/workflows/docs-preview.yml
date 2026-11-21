@@ -1,0 +1,38 @@
+name: Build Terraform docs preview
+
+on:
+  pull_request:
+    paths:
+      - 'Architecture & Internals/**'
+      - 'docs-site/**'
+      - '.github/workflows/docs-preview.yml'
+  push:
+    branches:
+      - 'docs/github-pages-vitepress-preview'
+    paths:
+      - 'Architecture & Internals/**'
+      - 'docs-site/**'
+      - '.github/workflows/docs-preview.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: docs-site/package.json
+      - name: Install VitePress
+        working-directory: docs-site
+        run: npm install
+      - name: Build documentation site
+        working-directory: docs-site
+        run: npm run docs:build
