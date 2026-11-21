@@ -47,7 +47,6 @@ Terraform Core     = planner and orchestrator
 
 ## Main components
 
-  -----------------------------------------------------------------------
 | Component | Senior DevOps interpretation |
 | --- | --- |
 | Terraform configuration | Desired-state definition: resources, data sources, modules, variables, and outputs |
@@ -404,7 +403,6 @@ frequency.
 
 ## Suggested next topics for senior-level understanding
 
-  -----------------------------------------------------------------------
 | Topic | Why it matters in production |
 | --- | --- |
 | State internals | Understand lineage, serial numbers, resource instances, imports, and recovery |
