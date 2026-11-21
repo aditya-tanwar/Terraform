@@ -66,7 +66,6 @@ provider reads, dependency analysis, and change calculation.
 
 ### Main participants
 
-  -----------------------------------------------------------------------
 | Participant | Responsibility |
 | --- | --- |
 | Terraform Core | Coordinates the planning process |
@@ -280,7 +279,6 @@ other sensitive infrastructure artifacts.
 
 These concepts are related, but they are not interchangeable.
 
-  -----------------------------------------------------------------------
 | Concept | What it does | Main question |
 | --- | --- | --- |
 | Refresh | Reads current remote resource information through providers | What exists right now? |
@@ -389,7 +387,6 @@ Production recommendations:
 
 ## Part 6: Useful commands
 
-  -----------------------------------------------------------------------
 | Command | Purpose |
 | --- | --- |
 | `terraform init` | Initialize backend, providers, and modules |
