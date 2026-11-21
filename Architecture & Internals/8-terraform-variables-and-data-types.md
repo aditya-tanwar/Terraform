@@ -320,41 +320,27 @@ easier to validate and understand.
 ### Variable declarations and related constructs
 
   ----------------------------------------------------------------------------------
-  Construct               Purpose                 How to reference or use it
-  ----------------------- ----------------------- ----------------------------------
-  Input variable          Accept input for a      `var.name`
-  (`variable`)            module
-
-  Local value (`locals`)  Store computed or       `local.name`
-                          reusable values
-
-  Output value (`output`) Expose a value from a   `terraform output`; callers use
-                          module                  `module.<name>.<output>`
-
-  Environment variable    Supply an input         Becomes the corresponding
-  (`TF_VAR_*`)            variable through the    `var.name`
-                          environment
-
-  Data source (`data`)    Read existing           `data.<type>.<name>.<attribute>`
-                          infrastructure or
-                          external information
-  ----------------------------------------------------------------------------------
+| Construct | Purpose | How to reference or use it |
+| --- | --- | --- |
+| Input variable (`variable`) | Accept input for a module | `var.name` |
+| Local value (`locals`) | Store computed or reusable values | `local.name` |
+| Output value (`output`) | Expose a value from a module | `terraform output`; callers use `module.<name>.<output>` |
+| Environment variable (`TF_VAR_*`) | Supply an input variable through the environment | Becomes the corresponding `var.name` |
+| Data source (`data`) | Read existing infrastructure or external information | `data.<type>.<name>.<attribute>` |
 
 ### Data types
 
-  Data type         Example
-  ----------------- ----------------------------------------------------
-  `string`          `"prod"`
-  `number`          `4`, `3.14`
-  `bool`            `true`
-  `list(string)`    `["a", "b"]`
-  `set(string)`     `toset(["a", "b"])`
-  `map(string)`     `{ key = "value" }`
-  `object({...})`   `{ cpu = 4, os = "linux" }`
-  `tuple([...])`    `["prod", 4, true]`
-  `any`             Any value accepted by the inferred type constraint
-
-------------------------------------------------------------------------
+| Data type | Example |
+| --- | --- |
+| `string` | `"prod"` |
+| `number` | `4`, `3.14` |
+| `bool` | `true` |
+| `list(string)` | `["a", "b"]` |
+| `set(string)` | `toset(["a", "b"])` |
+| `map(string)` | `{ key = "value" }` |
+| `object({...})` | `{ cpu = 4, os = "linux" }` |
+| `tuple([...])` | `["prod", 4, true]` |
+| `any` | Any value accepted by the inferred type constraint |
 
 ## Part 4: What matters most for senior DevOps interviews?
 
