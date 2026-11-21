@@ -48,35 +48,16 @@ Terraform Core     = planner and orchestrator
 ## Main components
 
   -----------------------------------------------------------------------
-  Component                           Senior DevOps interpretation
-  ----------------------------------- -----------------------------------
-  Terraform configuration             Desired-state definition:
-                                      resources, data sources, modules,
-                                      variables, and outputs
-
-  Terraform Core                      Binary that parses HCL, resolves
-                                      dependencies, calculates diffs, and
-                                      orchestrates changes
-
-  Providers                           Plugins that translate Terraform
-                                      actions into AWS, Kubernetes,
-                                      GitHub, and other API calls
-
-  State                               Inventory and resource identity
-                                      map; critical operational data
-
-  Backend                             Where Terraform stores state and,
-                                      usually, coordinates state locking
-
-  Modules                             Reusable infrastructure building
-                                      blocks with input/output contracts
-
-  Plan                                Proposed change set: create,
-                                      update, replace, destroy, or no-op
-
-  Registry                            Source of versioned providers and
-                                      modules
-  -----------------------------------------------------------------------
+| Component | Senior DevOps interpretation |
+| --- | --- |
+| Terraform configuration | Desired-state definition: resources, data sources, modules, variables, and outputs |
+| Terraform Core | Binary that parses HCL, resolves dependencies, calculates diffs, and orchestrates changes |
+| Providers | Plugins that translate Terraform actions into AWS, Kubernetes, GitHub, and other API calls |
+| State | Inventory and resource identity map; critical operational data |
+| Backend | Where Terraform stores state and, usually, coordinates state locking |
+| Modules | Reusable infrastructure building blocks with input/output contracts |
+| Plan | Proposed change set: create, update, replace, destroy, or no-op |
+| Registry | Source of versioned providers and modules |
 
 ## What happens during `terraform plan`
 
@@ -424,29 +405,11 @@ frequency.
 ## Suggested next topics for senior-level understanding
 
   -----------------------------------------------------------------------
-  Topic                               Why it matters in production
-  ----------------------------------- -----------------------------------
-  State internals                     Understand lineage, serial numbers,
-                                      resource instances, imports, and
-                                      recovery
-
-  Graph internals                     Understand graph construction,
-                                      parallelism, dependencies, and
-                                      replacement ordering
-
-  Provider internals                  Understand plugin protocol, RPC,
-                                      schemas, and resource lifecycle
-
-  Lifecycle management                Understand `create_before_destroy`,
-                                      `prevent_destroy`,
-                                      `ignore_changes`, and replacement
-                                      behavior
-
-  State operations                    Understand `terraform import`,
-                                      `moved` blocks, `state mv`, and
-                                      safe refactoring
-
-  CI/CD controls                      Understand saved plans, approvals,
-                                      OIDC, policy checks, and drift
-                                      detection
-  -----------------------------------------------------------------------
+| Topic | Why it matters in production |
+| --- | --- |
+| State internals | Understand lineage, serial numbers, resource instances, imports, and recovery |
+| Graph internals | Understand graph construction, parallelism, dependencies, and replacement ordering |
+| Provider internals | Understand plugin protocol, RPC, schemas, and resource lifecycle |
+| Lifecycle management | Understand `create_before_destroy`, `prevent_destroy`, `ignore_changes`, and replacement behavior |
+| State operations | Understand `terraform import`, `moved` blocks, `state mv`, and safe refactoring |
+| CI/CD controls | Understand saved plans, approvals, OIDC, policy checks, and drift detection |
