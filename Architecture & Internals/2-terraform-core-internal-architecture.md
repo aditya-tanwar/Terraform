@@ -40,7 +40,6 @@ orchestration engine or control plane.
 The following are major responsibilities and conceptual subsystems. They
 are not necessarily separate binaries or one-to-one internal packages.
 
-  -----------------------------------------------------------------------
 | Component | Responsibility |
 | --- | --- |
 | HCL Parser | Parses `.tf` files and converts HCL into structured representations |
@@ -100,7 +99,6 @@ a simple linear pipeline; this sequence is a learning model.
 It is important to distinguish Core responsibilities from provider
 responsibilities.
 
-  -----------------------------------------------------------------------
 | Responsibility | Who handles it? |
 | --- | --- |
 | Understanding AWS resource schemas | AWS provider |
@@ -511,7 +509,6 @@ infrastructure.
 
 ## 11. Quick Reference
 
-  -----------------------------------------------------------------------
 | Situation | Terraform behavior |
 | --- | --- |
 | Create dependent resources | Dependencies are created first |
