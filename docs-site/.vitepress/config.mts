@@ -76,9 +76,6 @@ export default defineConfig({
     },
     returnToTopLabel: 'Back to top',
     sidebarMenuLabel: 'Guide navigation',
-    darkModeSwitchLabel: 'Appearance',
-    socialLinks: [
-      { icon: 'github', link: 'https://github.com/aditya-tanwar/Terraform' }
-    ]
+    darkModeSwitchLabel: 'Appearance'
   }
 });
