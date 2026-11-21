@@ -41,42 +41,18 @@ The following are major responsibilities and conceptual subsystems. They
 are not necessarily separate binaries or one-to-one internal packages.
 
   -----------------------------------------------------------------------
-  Component                           Responsibility
-  ----------------------------------- -----------------------------------
-  HCL Parser                          Parses `.tf` files and converts HCL
-                                      into structured representations
-
-  Configuration Loader                Loads modules, variables,
-                                      resources, data sources, and
-                                      provider configurations
-
-  Expression Evaluator                Evaluates expressions, locals,
-                                      variables, functions, and
-                                      references
-
-  Dependency Graph Engine             Builds resource dependency graphs
-                                      and determines execution ordering
-
-  Planning Engine                     Compares desired configuration with
-                                      refreshed state and calculates
-                                      proposed changes
-
-  State Manager                       Reads, tracks, and updates
-                                      Terraform state
-
-  Backend Interface                   Coordinates state storage and state
-                                      locking where supported
-
-  Provider Plugin Manager             Starts provider processes and
-                                      establishes plugin communication
-
-  Apply Engine                        Executes planned operations and
-                                      coordinates resource changes
-
-  CLI                                 Handles commands such as `init`,
-                                      `plan`, `apply`, `destroy`, and
-                                      `validate`
-  -----------------------------------------------------------------------
+| Component | Responsibility |
+| --- | --- |
+| HCL Parser | Parses `.tf` files and converts HCL into structured representations |
+| Configuration Loader | Loads modules, variables, resources, data sources, and provider configurations |
+| Expression Evaluator | Evaluates expressions, locals, variables, functions, and references |
+| Dependency Graph Engine | Builds resource dependency graphs and determines execution ordering |
+| Planning Engine | Compares desired configuration with refreshed state and calculates proposed changes |
+| State Manager | Reads, tracks, and updates Terraform state |
+| Backend Interface | Coordinates state storage and state locking where supported |
+| Provider Plugin Manager | Starts provider processes and establishes plugin communication |
+| Apply Engine | Executes planned operations and coordinates resource changes |
+| CLI | Handles commands such as `init`, `plan`, `apply`, `destroy`, and `validate` |
 
 ## 2. How the components work together
 
@@ -125,26 +101,17 @@ It is important to distinguish Core responsibilities from provider
 responsibilities.
 
   -----------------------------------------------------------------------
-  Responsibility                      Who handles it?
-  ----------------------------------- -----------------------------------
-  Understanding AWS resource schemas  AWS provider
-
-  AWS provider authentication and     AWS provider configuration and
-  configuration                       credential chain
-
-  Making AWS API calls                AWS provider and AWS SDK
-
-  Understanding Kubernetes resources  Kubernetes provider
-
-  Parsing HCL                         Terraform Core
-
-  Building the dependency graph       Terraform Core
-
-  Calculating infrastructure changes  Terraform Core
-
-  Managing Terraform state            Terraform Core, working with the
-                                      configured backend
-  -----------------------------------------------------------------------
+| Responsibility | Who handles it? |
+| --- | --- |
+| Understanding AWS resource schemas | AWS provider |
+| AWS provider authentication and | AWS provider configuration and |
+| configuration | credential chain |
+| Making AWS API calls | AWS provider and AWS SDK |
+| Understanding Kubernetes resources | Kubernetes provider |
+| Parsing HCL | Terraform Core |
+| Building the dependency graph | Terraform Core |
+| Calculating infrastructure changes | Terraform Core |
+| Managing Terraform state | Terraform Core, working with the configured backend |
 
 For example, Terraform Core does not know how to create an EC2 instance at the AWS API level. It determines that a resource operation is required and delegates the platform-specific work to the AWS provider.
 
@@ -545,23 +512,16 @@ infrastructure.
 ## 11. Quick Reference
 
   -----------------------------------------------------------------------
-  Situation                           Terraform behavior
-  ----------------------------------- -----------------------------------
-  Create dependent resources          Dependencies are created first
-
-  Destroy dependent resources         Dependents are destroyed first
-
-  Independent operations              May run in parallel
-
-  Replacement by default              Destroy old, then create new
-                                      (`-/+`)
-
-  Replacement with                    Create new, then destroy old
-  `create_before_destroy`             (`+/-`)
-
-  Explicit hidden ordering            Use `depends_on` when a reference
-  requirement                         cannot express it
-  -----------------------------------------------------------------------
+| Situation | Terraform behavior |
+| --- | --- |
+| Create dependent resources | Dependencies are created first |
+| Destroy dependent resources | Dependents are destroyed first |
+| Independent operations | May run in parallel |
+| Replacement by default | Destroy old, then create new (`-/+`) |
+| Replacement with | Create new, then destroy old |
+| `create_before_destroy` | (`+/-`) |
+| Explicit hidden ordering | Use `depends_on` when a reference |
+| requirement | cannot express it |
 
 ## 12. Key Takeaway
 
