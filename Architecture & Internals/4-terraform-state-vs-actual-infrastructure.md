@@ -345,7 +345,6 @@ propose reconciling AWS back to `t2.small`.
 
 ## 7. The Three Operations to Remember
 
-  -----------------------------------------------------------------------
 | Operation | What it does |
 | --- | --- |
 | Refresh | Reads remote infrastructure and updates Terraform's view/state information |
