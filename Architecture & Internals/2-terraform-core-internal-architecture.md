@@ -1,5 +1,30 @@
 # Terraform Core: Internal Components and Architecture
 
+## Contents
+
+- [What is Terraform Core?](#what-is-terraform-core)
+- [1. Conceptual components of Terraform Core](#1-conceptual-components-of-terraform-core)
+- [2. How the components work together](#2-how-the-components-work-together)
+- [3. What Terraform Core does not contain](#3-what-terraform-core-does-not-contain)
+- [4. Complete conceptual architecture](#4-complete-conceptual-architecture)
+- [5. Three important architectural boundaries](#5-three-important-architectural-boundaries)
+- [6. Dependency graph and parallelism](#6-dependency-graph-and-parallelism)
+- [7. Senior-level takeaway](#7-senior-level-takeaway)
+- [1. The Core Idea](#1-the-core-idea)
+- [2. Creation Ordering](#2-creation-ordering)
+- [3. Destroy Ordering](#3-destroy-ordering)
+- [4. Parallel Execution](#4-parallel-execution)
+- [5. How Terraform Decides Whether Replacement Is Required](#5-how-terraform-decides-whether-replacement-is-required)
+- [6. Default Replacement: Destroy Before Create](#6-default-replacement-destroy-before-create)
+- [7. Create Before Destroy](#7-create-before-destroy)
+- [8. Replacement Ordering and Dependencies](#8-replacement-ordering-and-dependencies)
+- [9. Explicit Dependencies with \`depends_on\`](#9-explicit-dependencies-with-dependson)
+- [10. Practical CI/CD Example](#10-practical-cicd-example)
+- [11. Quick Reference](#11-quick-reference)
+- [12. Key Takeaway](#12-key-takeaway)
+
+---
+
 ## What is Terraform Core?
 
 **Terraform Core is the main Terraform executable (`terraform`
@@ -57,7 +82,7 @@ are not necessarily separate binaries or one-to-one internal packages.
 
 Consider this Terraform configuration:
 
-``` hcl
+```hcl
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
 }
@@ -70,7 +95,7 @@ resource "aws_subnet" "app" {
 
 When you execute:
 
-``` bash
+```bash
 terraform plan
 ```
 
@@ -121,13 +146,12 @@ responsibilities.
                                       configured backend
   -----------------------------------------------------------------------
 
-For example, Terraform Core does not know how to create an EC2 instance
-at the AWS API level. It determines that a resource operation is
+For example, Terraform Core does not implement the AWS API operation for creating an EC2 instance. It determines the required resource operation and delegates the provider-specific work to the AWS provider. It determines that a resource operation is
 required and delegates the platform-specific work to the AWS provider.
 
 ## 4. Complete conceptual architecture
 
-``` mermaid
+```mermaid
 flowchart TB
     HCL["Terraform Configuration (.tf)"]
 
@@ -188,7 +212,7 @@ dependency graph to coordinate operations.
 
 For example:
 
-``` text
+```text
              VPC
               |
            Subnet
@@ -209,7 +233,7 @@ resource operations Terraform walks during planning or applying.
 
 Example:
 
-``` bash
+```bash
 terraform apply -parallelism=10
 ```
 
@@ -251,7 +275,7 @@ according to lifecycle rules and dependency constraints.
 
 Consider an AWS environment with this dependency chain:
 
-``` text
+```text
 VPC -> Subnet -> EC2 Instance
 ```
 
@@ -264,7 +288,7 @@ therefore creates them in this order:
 
 Example:
 
-``` hcl
+```hcl
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
 }
@@ -285,7 +309,7 @@ References such as `aws_vpc.main.id` and `aws_subnet.app.id` create
 implicit dependencies. Terraform can infer the required order from those
 references.
 
-``` text
+```text
 Create VPC
    |
    v
@@ -304,7 +328,7 @@ Destroy ordering is the reverse of creation ordering.
 
 For the same dependency chain:
 
-``` text
+```text
 VPC -> Subnet -> EC2
 ```
 
@@ -318,7 +342,7 @@ Why? The EC2 instance depends on the subnet, and the subnet depends on
 the VPC. Terraform must remove the dependent objects before removing the
 infrastructure they rely on.
 
-``` text
+```text
 Destroy EC2
     |
     v
@@ -338,7 +362,7 @@ Not every resource needs to wait for every other resource.
 For example, if an EC2 instance and an S3 bucket have no dependency
 relationship, Terraform may create them concurrently:
 
-``` text
+```text
              +--> Create EC2
 Start --------|
              +--> Create S3 bucket
@@ -347,7 +371,7 @@ Start --------|
 Terraform's default parallelism limit is 10 operations. You can change
 it with:
 
-``` bash
+```bash
 terraform apply -parallelism=5
 ```
 
@@ -379,7 +403,7 @@ its replacement when replacement is required.
 
 A plan may show:
 
-``` text
+```text
 -/+ resource "aws_instance" "app" {
       # forces replacement
   }
@@ -390,7 +414,7 @@ replacement object.
 
 Conceptually:
 
-``` text
+```text
 Destroy old EC2
       |
       v
@@ -405,7 +429,7 @@ new one is ready.
 You can change the replacement order with the `create_before_destroy`
 lifecycle rule:
 
-``` hcl
+```hcl
 resource "aws_instance" "app" {
   ami           = "ami-0123456789abcdef0"
   instance_type = "t3.medium"
@@ -424,7 +448,7 @@ When replacement is required, Terraform attempts to:
 
 A plan may show:
 
-``` text
+```text
 +/- resource "aws_instance" "app" {
       # forces replacement
   }
@@ -432,7 +456,7 @@ A plan may show:
 
 Conceptually:
 
-``` text
+```text
 Create new EC2
       |
       v
@@ -476,7 +500,7 @@ reference, use `depends_on`.
 
 Example:
 
-``` hcl
+```hcl
 resource "aws_instance" "app" {
   ami           = "ami-0123456789abcdef0"
   instance_type = "t3.medium"
@@ -502,7 +526,7 @@ they express the dependency more precisely.
 
 A Jenkins pipeline might run:
 
-``` bash
+```bash
 terraform init
 terraform validate
 terraform plan -out=tfplan
@@ -510,7 +534,7 @@ terraform plan -out=tfplan
 
 After review and approval:
 
-``` bash
+```bash
 terraform apply tfplan
 ```
 
