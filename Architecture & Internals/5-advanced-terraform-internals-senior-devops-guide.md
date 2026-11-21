@@ -623,7 +623,6 @@ resource or relevant attribute changes.
 
 ## 4.6 Comparison
 
-  -----------------------------------------------------------------------
 | Argument | Purpose |
 | --- | --- |
 | `create_before_destroy` | Create replacement before destroying old object |
@@ -794,7 +793,6 @@ terraform state mv \
 This changes the state binding. It does not move or recreate the actual
 EC2 instance.
 
-  -----------------------------------------------------------------------
 | `moved` block | `terraform state mv` |
 | --- | --- |
 | Declared in configuration | Executed as a CLI command |
@@ -1014,7 +1012,6 @@ instance. It changes how Terraform tracks that instance.
 
 ## D. Side-by-side comparison
 
-  -----------------------------------------------------------------------
 | Feature | `moved` block | `terraform state mv` |
 | --- | --- | --- |
 | Approach | Declarative | Imperative |
@@ -1400,7 +1397,6 @@ flowchart TD
 
 Each of the six topics contributes to this architecture:
 
-  -----------------------------------------------------------------------
 | Topic | Production responsibility |
 | --- | --- |
 | State internals | Preserve resource identity and recover safely |
@@ -2197,7 +2193,6 @@ designed for it.
 
 ## Quick revision table
 
-  ------------------------------------------------------------------------
 | \# | Topic | Core idea |
 | --- | --- | --- |
 | 1 | Lineage vs serial | Lineage identifies state history; serial orders snapshots within it |
