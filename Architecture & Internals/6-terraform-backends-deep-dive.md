@@ -3,6 +3,32 @@
 **Research checked against HashiCorp Terraform documentation on November
 20, 2026.**
 
+## Contents
+
+- [1. What is a Terraform backend?](#1-what-is-a-terraform-backend)
+- [2. What does a backend do?](#2-what-does-a-backend-do)
+- [3. Types of Terraform backends](#3-types-of-terraform-backends)
+- [4. State locking: why it matters](#4-state-locking-why-it-matters)
+- [5. Deep dive: how S3 locking works today](#5-deep-dive-how-s3-locking-works-today)
+- [6. What if Terraform gets stuck holding a lock?](#6-what-if-terraform-gets-stuck-holding-a-lock)
+- [7. Terraform workspaces and backend state paths](#7-terraform-workspaces-and-backend-state-paths)
+- [8. State storage, versioning, encryption, and security](#8-state-storage-versioning-encryption-and-security)
+- [9. Backend credentials: a critical security detail](#9-backend-credentials-a-critical-security-detail)
+- [10. Backend initialization: what does \`terraform init\` do?](#10-backend-initialization-what-does-terraform-init-do)
+- [11. Migrating from local state to S3](#11-migrating-from-local-state-to-s3)
+- [12. Recovering or inspecting remote state](#12-recovering-or-inspecting-remote-state)
+- [13. Backend vs \`terraform_remote_state\`](#13-backend-vs-terraformremotestate)
+- [14. What happens when two Jenkins pipelines run?](#14-what-happens-when-two-jenkins-pipelines-run)
+- [15. Recommended AWS backend architecture](#15-recommended-aws-backend-architecture)
+- [16. Common mistakes to avoid](#16-common-mistakes-to-avoid)
+- [17. Quick comparison of backend options](#17-quick-comparison-of-backend-options)
+- [18. Commands to remember](#18-commands-to-remember)
+- [19. Recommended approach for an AWS + Jenkins environment](#19-recommended-approach-for-an-aws-jenkins-environment)
+- [20. Final mental model](#20-final-mental-model)
+- [Official HashiCorp references](#official-hashicorp-references)
+
+---
+
 This guide explains Terraform backends from fundamentals through
 production operations. Examples focus on AWS S3, with Azure, GCP,
 Kubernetes, PostgreSQL, and HCP Terraform comparisons.
@@ -25,7 +51,7 @@ local `terraform.tfstate` file.
 
 Each engineer or CI agent might have a different local state copy:
 
-``` text
+```text
 Engineer A -> local terraform.tfstate
 Engineer B -> local terraform.tfstate
 Engineer C -> local terraform.tfstate
@@ -37,7 +63,7 @@ location.
 
 ### With a remote backend
 
-``` text
+```text
 Engineer A ----+
 Engineer B ----+----> Shared remote state (for example, S3)
 Engineer C ----+
@@ -81,7 +107,7 @@ A backend is not the same thing as a provider.
 
 Example:
 
-``` text
+```text
                 Terraform CLI
                       |
                 Terraform Core
@@ -106,7 +132,7 @@ Terraform; they are not provider plugins.
 
 The default backend stores state on the local machine.
 
-``` hcl
+```hcl
 terraform {
   backend "local" {
     path = "terraform.tfstate"
@@ -118,7 +144,7 @@ If no backend is configured, Terraform uses the local backend.
 
 Typical project layout:
 
-``` text
+```text
 terraform-project/
 ├── main.tf
 ├── variables.tf
@@ -145,7 +171,7 @@ the default for shared production workflows.
 
 The S3 backend stores state as an object in an S3 bucket.
 
-``` hcl
+```hcl
 terraform {
   backend "s3" {
     bucket       = "company-terraform-state"
@@ -159,7 +185,7 @@ terraform {
 
 State location:
 
-``` text
+```text
 s3://company-terraform-state/
     production/network/terraform.tfstate
 ```
@@ -181,7 +207,7 @@ as the primary mechanism.
 
 Stores state in an Azure Blob Storage container.
 
-``` hcl
+```hcl
 terraform {
   backend "azurerm" {
     resource_group_name  = "terraform-state-rg"
@@ -194,7 +220,7 @@ terraform {
 
 State location:
 
-``` text
+```text
 Azure Storage Account
     |
     +-- Container: tfstate
@@ -210,7 +236,7 @@ federation.
 
 Stores state in Google Cloud Storage.
 
-``` hcl
+```hcl
 terraform {
   backend "gcs" {
     bucket = "company-terraform-state"
@@ -229,7 +255,7 @@ Terraform runs remotely.
 
 You can connect using a `cloud` block:
 
-``` hcl
+```hcl
 terraform {
   cloud {
     organization = "my-company"
@@ -244,7 +270,7 @@ terraform {
 Alternatively, Terraform supports the `remote` backend for connecting to
 HCP Terraform or Terraform Enterprise workspaces:
 
-``` hcl
+```hcl
 terraform {
   backend "remote" {
     organization = "my-company"
@@ -290,13 +316,13 @@ and state.
 
 Engineer A runs:
 
-``` bash
+```bash
 terraform apply
 ```
 
 At almost the same time, Engineer B runs:
 
-``` bash
+```bash
 terraform apply
 ```
 
@@ -322,7 +348,7 @@ depending on the backend and lock timeout.
 
 ### With locking enabled
 
-``` text
+```text
 Engineer A starts apply
        |
        v
@@ -352,7 +378,7 @@ can generally proceed concurrently.
 
 Example:
 
-``` hcl
+```hcl
 terraform {
   backend "s3" {
     bucket       = "company-terraform-state"
@@ -366,7 +392,7 @@ terraform {
 
 Terraform uses two objects:
 
-``` text
+```text
 S3 Bucket
     |
     +-- production/eks/
@@ -395,7 +421,7 @@ lock-file operations.
 
 Older configurations commonly use:
 
-``` hcl
+```hcl
 terraform {
   backend "s3" {
     bucket         = "company-terraform-state"
@@ -412,7 +438,7 @@ This uses a DynamoDB table with a partition key named `LockID` of type
 However, **DynamoDB-based S3 backend locking is deprecated** in current
 HashiCorp documentation. For new configurations, prefer:
 
-``` hcl
+```hcl
 use_lockfile = true
 ```
 
@@ -426,7 +452,7 @@ migration and Terraform version compatibility carefully.
 Suppose Jenkins starts an apply and its agent crashes before the lock is
 released. A later run might report:
 
-``` text
+```text
 Error acquiring the state lock
 
 Error message: state is locked
@@ -451,7 +477,7 @@ Jenkins builds, agent pods, and engineers' local terminals.
 Only after establishing that the original operation has stopped and the
 lock is stale should you consider force-unlocking.
 
-``` bash
+```bash
 terraform force-unlock <LOCK_ID>
 ```
 
@@ -463,7 +489,7 @@ start modifying the same state.
 
 ### Lock timeout and disabling locking
 
-``` bash
+```bash
 # Wait up to five minutes to acquire the lock
 terraform apply -lock-timeout=5m
 
@@ -483,7 +509,7 @@ Production
 
 S3 example:
 
-``` hcl
+```hcl
 terraform {
   backend "s3" {
     bucket       = "company-terraform-state"
@@ -496,14 +522,14 @@ terraform {
 
 The default workspace stores state at:
 
-``` text
+```text
 application/terraform.tfstate
 ```
 
 A non-default workspace such as `dev` uses the workspace prefix. The
 default prefix is `env:`:
 
-``` text
+```text
 env:/dev/application/terraform.tfstate
 ```
 
@@ -511,7 +537,7 @@ You can change the prefix with `workspace_key_prefix`.
 
 Commands:
 
-``` bash
+```bash
 terraform workspace list
 terraform workspace new dev
 terraform workspace select dev
@@ -560,7 +586,7 @@ For S3, consider:
 
 Example:
 
-``` hcl
+```hcl
 terraform {
   backend "s3" {
     bucket       = "company-terraform-state"
@@ -583,7 +609,7 @@ Avoid hardcoding credentials in the backend block.
 
 Bad example:
 
-``` hcl
+```hcl
 terraform {
   backend "s3" {
     bucket     = "company-terraform-state"
@@ -625,7 +651,7 @@ Git.
 When you add or change a backend configuration, Terraform needs to
 initialize it.
 
-``` hcl
+```hcl
 terraform {
   backend "s3" {
     bucket       = "company-terraform-state"
@@ -638,7 +664,7 @@ terraform {
 
 Run:
 
-``` bash
+```bash
 terraform init
 ```
 
@@ -656,7 +682,7 @@ source.
 
 `backend.tf`:
 
-``` hcl
+```hcl
 terraform {
   backend "s3" {}
 }
@@ -664,7 +690,7 @@ terraform {
 
 `prod.s3.tfbackend`:
 
-``` hcl
+```hcl
 bucket       = "company-terraform-state"
 key          = "production/network/terraform.tfstate"
 region       = "ap-south-1"
@@ -673,7 +699,7 @@ use_lockfile = true
 
 Initialize:
 
-``` bash
+```bash
 terraform init -backend-config=prod.s3.tfbackend
 ```
 
@@ -690,13 +716,13 @@ Suppose you started with local state and want to move to S3.
 
 First, back up the local state:
 
-``` bash
+```bash
 cp terraform.tfstate terraform.tfstate.backup
 ```
 
 Add the S3 backend:
 
-``` hcl
+```hcl
 terraform {
   backend "s3" {
     bucket       = "company-terraform-state"
@@ -709,7 +735,7 @@ terraform {
 
 Then run:
 
-``` bash
+```bash
 terraform init -migrate-state
 ```
 
@@ -718,7 +744,7 @@ supported by the source and destination backends.
 
 Verify:
 
-``` bash
+```bash
 terraform state list
 terraform plan
 ```
@@ -733,7 +759,7 @@ state contents.
 
 Useful commands:
 
-``` bash
+```bash
 # Download current state to stdout
 terraform state pull
 
@@ -768,7 +794,7 @@ These are related, but they do different jobs.
 
 Example architecture:
 
-``` text
+```text
 Project A: Network
     |
     +-- Creates VPC
@@ -783,7 +809,7 @@ Project B: Application
 
 Project A:
 
-``` hcl
+```hcl
 output "vpc_id" {
   value = aws_vpc.main.id
 }
@@ -791,7 +817,7 @@ output "vpc_id" {
 
 Project B:
 
-``` hcl
+```hcl
 data "terraform_remote_state" "network" {
   backend = "s3"
 
@@ -827,7 +853,7 @@ same lock until A releases it.
 
 Example shell steps:
 
-``` bash
+```bash
 terraform init
 terraform validate
 terraform plan -out=tfplan
@@ -846,7 +872,7 @@ can create complicated dependencies and operational overhead.
 A common multi-account AWS pattern is to keep Terraform state in a
 dedicated administrative or shared-services account.
 
-``` text
+```text
 Shared Services / Management AWS Account
     |
     +-- S3 Terraform State Bucket
@@ -872,7 +898,7 @@ Jenkins / Terraform agents
 
 Example state key layout:
 
-``` text
+```text
 s3://company-terraform-state/
     dev/
         networking/terraform.tfstate
@@ -935,12 +961,12 @@ restrictive bucket policies.
                                                          work
 
   S3                AWS S3 object     S3 lock file       AWS infrastructure
-                                      (`use_lockfile`)   
+                                      (`use_lockfile`)
 
   AzureRM           Azure Blob        Blob lease         Azure infrastructure
 
   GCS               Google Cloud      Supported          GCP infrastructure
-                    Storage                              
+                    Storage
 
   HCP Terraform /   HCP Terraform     Supported          Centralized state
   remote            workspace                            and remote execution
@@ -955,12 +981,12 @@ restrictive bucket policies.
                                                          state
 
   HTTP              REST service      Optional server    Custom state service
-                                      support            
+                                      support
   ---------------------------------------------------------------------------
 
 ## 18. Commands to remember
 
-``` bash
+```bash
 # Initialize backend
 terraform init
 
@@ -1016,7 +1042,7 @@ For a shared production AWS environment, a strong starting design is:
 
 Example:
 
-``` hcl
+```hcl
 terraform {
   backend "s3" {
     bucket       = "company-terraform-state"
@@ -1030,7 +1056,7 @@ terraform {
 
 ## 20. Final mental model
 
-``` text
+```text
 Terraform configuration
         |
         v
