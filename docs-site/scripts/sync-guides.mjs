@@ -63,7 +63,7 @@ ${guideLinks}
 
 ---
 
-The website includes only the \`Architecture & Internals/\` Markdown guides. Module examples and the \`Modules/\` folder are intentionally excluded.
+The website includes only the Architecture & Internals Markdown guides. Module examples and the Modules folder are intentionally excluded.
 `;
 
 fs.writeFileSync(path.join(siteRoot, 'index.md'), homePage, 'utf8');
