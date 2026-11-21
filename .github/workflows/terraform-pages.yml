@@ -9,6 +9,7 @@ on:
   push:
     branches:
       - main
+      - docs/terraform-github-pages
     paths:
       - 'Architecture & Internals/**'
       - 'docs-site/**'
