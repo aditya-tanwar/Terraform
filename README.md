@@ -25,6 +25,7 @@ The material is organized to support both hands-on learning and senior DevOps in
 | 7 | [Terraform State Internals and Remote State Operations](./Architecture%20%26%20Internals/7-terraform-state-internals-and-remote-state-operations.md) | Lineage, serial, snapshots, locking, pull, and push |
 | 8 | [Terraform Variables and Data Types](./Architecture%20%26%20Internals/8-terraform-variables-and-data-types.md) | Input variables, locals, outputs, data sources, and type constraints |
 | 9 | [Terraform Policies: Beginner to Production Guide](./9-terraform-policies-beginner-to-production-guide.md) | Policy validation, OPA, Sentinel, Jenkins integration, and production guardrails |
+| 10 | [Terraform Taint and Resource Replacement — Production Scenarios](./Architecture%20%26%20Internals/10-terraform-taint-and-resource-replacement-production-scenarios.md) | Tainted state, the deprecated `terraform taint` command, `-replace`, and production recovery workflows |
 
 ## Suggested learning path
 
