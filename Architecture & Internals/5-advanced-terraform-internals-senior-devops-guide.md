@@ -123,12 +123,11 @@ Terraform state has two important metadata fields:
 
 Example:
 
-  Snapshot   Lineage       Serial Contents
-  ---------- ----------- -------- ---------------------
-  Initial    `abc-123`          1 One EC2 instance
-  Next       `abc-123`          2 EC2 + S3 bucket
-  Later      `abc-123`          3 EC2 + S3 + IAM role
-
+| Snapshot | Lineage | Serial | Contents |
+| --- | --- | --- | --- |
+| Initial | `abc-123` | 1 | One EC2 instance |
+| Next | `abc-123` | 2 | EC2 + S3 bucket |
+| Later | `abc-123` | 3 | EC2 + S3 + IAM role |
 The lineage remains the same as that state history advances. The serial
 increases as newer snapshots are written.
 
@@ -474,13 +473,12 @@ CRUD means:
 -   Update
 -   Delete
 
-  Operation   Responsibility
-  ----------- -----------------------------------------------------------
-  Create      Create the remote object and return its ID and attributes
-  Read        Fetch current remote information and refresh state
-  Update      Modify the existing object in place
-  Delete      Delete the remote object
-
+| Operation | Responsibility |
+| --- | --- |
+| Create | Create the remote object and return its ID and attributes |
+| Read | Fetch current remote information and refresh state |
+| Update | Modify the existing object in place |
+| Delete | Delete the remote object |
 Conceptual flow for creation:
 
 ```text
@@ -626,20 +624,12 @@ resource or relevant attribute changes.
 ## 4.6 Comparison
 
   -----------------------------------------------------------------------
-  Argument                            Purpose
-  ----------------------------------- -----------------------------------
-  `create_before_destroy`             Create replacement before
-                                      destroying old object
-
-  `prevent_destroy`                   Reject destructive plans while
-                                      configured
-
-  `ignore_changes`                    Ignore selected attribute
-                                      differences during update planning
-
-  `replace_triggered_by`              Trigger replacement based on
-                                      changes to another managed resource
-  -----------------------------------------------------------------------
+| Argument | Purpose |
+| --- | --- |
+| `create_before_destroy` | Create replacement before destroying old object |
+| `prevent_destroy` | Reject destructive plans while configured |
+| `ignore_changes` | Ignore selected attribute differences during update planning |
+| `replace_triggered_by` | Trigger replacement based on changes to another managed resource |
 
 Lifecycle settings affect graph construction and traversal. They are not
 all persisted in state in the same way; notably, Terraform records
@@ -805,16 +795,12 @@ This changes the state binding. It does not move or recreate the actual
 EC2 instance.
 
   -----------------------------------------------------------------------
-  `moved` block                       `terraform state mv`
-  ----------------------------------- -----------------------------------
-  Declared in configuration           Executed as a CLI command
-
-  Visible in Git                      Direct state mutation
-
-  Processed during planning           Changes state immediately
-
-  Good for collaborative refactoring  Useful for imperative state changes
-  -----------------------------------------------------------------------
+| `moved` block | `terraform state mv` |
+| --- | --- |
+| Declared in configuration | Executed as a CLI command |
+| Visible in Git | Direct state mutation |
+| Processed during planning | Changes state immediately |
+| Good for collaborative refactoring | Useful for imperative state changes |
 
 For normal configuration refactoring, prefer `moved` blocks because they
 document the migration.
@@ -918,10 +904,9 @@ resource "aws_instance" "web" {
 
 The resource's address has changed:
 
-  Before               After
-  -------------------- ---------------------------------------
-  `aws_instance.web`   `module.application.aws_instance.web`
-
+| Before | After |
+| --- | --- |
+| `aws_instance.web` | `module.application.aws_instance.web` |
 But the existing state still associates the EC2 instance with
 `aws_instance.web`. Without telling Terraform about the address change,
 Terraform may plan to destroy the old address and create an object at
@@ -1030,34 +1015,23 @@ instance. It changes how Terraform tracks that instance.
 ## D. Side-by-side comparison
 
   -----------------------------------------------------------------------
-  Feature                 `moved` block           `terraform state mv`
-  ----------------------- ----------------------- -----------------------
-  Approach                Declarative             Imperative
-
-  Where you define it     Terraform configuration CLI command
-                          (`.tf` file)
-
-  When the move is        During planning         Immediately when the
-  processed                                       command runs
-
-  When the state change   When the plan is        The command updates
-  is committed            applied                 state directly
-
-  Requires                Yes                     No
-  `terraform apply` for
-  the move
-
-  Migration instructions  Yes, if the             Not in the
-  stored in Git           configuration is        configuration by itself
-                          committed
-
-  Useful for team-wide    Yes                     Can be used, but
-  refactoring                                     requires careful
-                                                  coordination
-
-  Recreates the real      No                      No
-  infrastructure
-  -----------------------------------------------------------------------
+| Feature | `moved` block | `terraform state mv` |
+| --- | --- | --- |
+| Approach | Declarative | Imperative |
+| Where you define it | Terraform configuration (`.tf` file) | CLI command |
+| When the move is | During planning | Immediately when the |
+| processed |  | command runs |
+| When the state change | When the plan is | The command updates |
+| is committed | applied | state directly |
+| Requires | Yes | No |
+| `terraform apply` for |  |  |
+| the move |  |  |
+| Migration instructions | Yes, if the | Not in the |
+| stored in Git | configuration is committed | configuration by itself |
+| Useful for team-wide | Yes | Can be used, but |
+| refactoring |  | requires careful coordination |
+| Recreates the real | No | No |
+| infrastructure |  |  |
 
 ## E. When should you use each?
 
@@ -1240,13 +1214,12 @@ Developer pushes Terraform code
 
 Example approval strategy:
 
-  Environment   Approval
-  ------------- ---------------------------------
-  Dev           Automatic or lightweight review
-  QA            Team approval
-  Staging       Platform team approval
-  Production    Mandatory authorized approval
-
+| Environment | Approval |
+| --- | --- |
+| Dev | Automatic or lightweight review |
+| QA | Team approval |
+| Staging | Platform team approval |
+| Production | Mandatory authorized approval |
 Ensure the approved plan artifact is the one passed to apply.
 
 ## 6.3 OIDC -- Avoid long-lived AWS credentials
@@ -1290,13 +1263,12 @@ AWS APIs
 AWS STS validates the token and the IAM role trust policy, then issues
 temporary credentials.
 
-  Long-lived credentials       OIDC federation
-  ---------------------------- --------------------------------
-  Static access keys           Short-lived credentials
-  Secrets stored in CI         Federated workload identity
-  Manual rotation required     Temporary credential lifecycle
-  Greater exposure if leaked   Reduced credential exposure
-
+| Long-lived credentials | OIDC federation |
+| --- | --- |
+| Static access keys | Short-lived credentials |
+| Secrets stored in CI | Federated workload identity |
+| Manual rotation required | Temporary credential lifecycle |
+| Greater exposure if leaked | Reduced credential exposure |
 Jenkins-specific consideration: Jenkins must have a configured OIDC
 identity provider or trusted workload identity integration. Do not
 assume every Jenkins installation automatically issues OIDC tokens.
@@ -1429,25 +1401,14 @@ flowchart TD
 Each of the six topics contributes to this architecture:
 
   -----------------------------------------------------------------------
-  Topic                               Production responsibility
-  ----------------------------------- -----------------------------------
-  State internals                     Preserve resource identity and
-                                      recover safely
-
-  Graph internals                     Determine dependencies and
-                                      execution order
-
-  Provider internals                  Communicate with cloud APIs
-
-  Lifecycle management                Control replacement, destruction,
-                                      and drift handling
-
-  State operations                    Adopt and refactor infrastructure
-                                      safely
-
-  CI/CD controls                      Secure and govern infrastructure
-                                      changes
-  -----------------------------------------------------------------------
+| Topic | Production responsibility |
+| --- | --- |
+| State internals | Preserve resource identity and recover safely |
+| Graph internals | Determine dependencies and execution order |
+| Provider internals | Communicate with cloud APIs |
+| Lifecycle management | Control replacement, destruction, and drift handling |
+| State operations | Adopt and refactor infrastructure safely |
+| CI/CD controls | Secure and govern infrastructure changes |
 
 ------------------------------------------------------------------------
 
@@ -2237,77 +2198,23 @@ designed for it.
 ## Quick revision table
 
   ------------------------------------------------------------------------
-                            \# Topic                 Core idea
-  ---------------------------- --------------------- ---------------------
-                             1 Lineage vs serial     Lineage identifies
-                                                     state history; serial
-                                                     orders snapshots
-                                                     within it
-
-                             2 `for_each` vs `count` Stable keys avoid
-                                                     index shifting when
-                                                     collection members
-                                                     change
-
-                             3 Parallelism           Independent graph
-                                                     nodes can run
-                                                     concurrently, within
-                                                     the parallelism limit
-
-                             4 Implicit vs explicit  References infer
-                               dependencies          dependencies;
-                                                     `depends_on` declares
-                                                     hidden dependencies
-
-                             5 Core to provider      Terraform Plugin
-                                                     Protocol using
-                                                     RPC/gRPC in modern
-                                                     versions
-
-                             6 RPC vs AWS SDK/API    Core talks to
-                                                     provider; provider
-                                                     talks to AWS
-
-                             7 Replacement           Provider planning
-                                                     behavior marks
-                                                     changes requiring
-                                                     destroy/create
-
-                             8 `prevent_destroy`     Only protects while
-                                                     its resource
-                                                     configuration remains
-
-                             9 Import vs data source Import manages an
-                                                     existing object; data
-                                                     source only reads it
-
-                            10 `moved` block         Records an address
-                                                     refactor so Terraform
-                                                     does not treat it as
-                                                     replacement
-
-                            11 `state mv` vs `moved` Imperative state edit
-                                                     vs declarative,
-                                                     version-controlled
-                                                     migration
-
-                            12 Saved plan            Apply the exact
-                                                     reviewed plan, not a
-                                                     newly generated one
-
-                            13 OIDC                  Exchanges trusted
-                                                     identity token for
-                                                     temporary AWS
-                                                     credentials
-
-                            14 Scheduled drift       Run a scheduled plan
-                               detection             and report changes
-
-                            15 No automatic drift    Drift may be
-                               apply                 intentional;
-                                                     investigate and
-                                                     approve remediation
-  ------------------------------------------------------------------------
+| \# | Topic | Core idea |
+| --- | --- | --- |
+| 1 | Lineage vs serial | Lineage identifies state history; serial orders snapshots within it |
+| 2 | `for_each` vs `count` | Stable keys avoid index shifting when collection members change |
+| 3 | Parallelism | Independent graph nodes can run concurrently, within the parallelism limit |
+| 4 | Implicit vs explicit dependencies | References infer dependencies; `depends_on` declares hidden dependencies |
+| 5 | Core to provider | Terraform Plugin Protocol using RPC/gRPC in modern versions |
+| 6 | RPC vs AWS SDK/API | Core talks to provider; provider talks to AWS |
+| 7 | Replacement | Provider planning behavior marks changes requiring destroy/create |
+| 8 | `prevent_destroy` | Only protects while its resource configuration remains |
+| 9 | Import vs data source | Import manages an existing object; data source only reads it |
+| 10 | `moved` block | Records an address refactor so Terraform does not treat it as replacement |
+| 11 | `state mv` vs `moved` | Imperative state edit vs declarative, version-controlled migration |
+| 12 | Saved plan | Apply the exact reviewed plan, not a newly generated one |
+| 13 | OIDC | Exchanges trusted identity token for temporary AWS credentials |
+| 14 | Scheduled drift detection | Run a scheduled plan and report changes |
+| 15 | No automatic drift apply | Drift may be intentional; investigate and approve remediation |
 
 ## Final interview takeaway
 
