@@ -1,8 +1,10 @@
 import { defineConfig } from 'vitepress';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const guidesDir = path.resolve(__dirname, '../guides');
+const configDir = path.dirname(fileURLToPath(import.meta.url));
+const guidesDir = path.resolve(configDir, '../guides');
 const guideFiles = fs.existsSync(guidesDir)
   ? fs.readdirSync(guidesDir)
       .filter((name) => name.toLowerCase().endsWith('.md'))
