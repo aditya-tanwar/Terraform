@@ -24,6 +24,7 @@ The material is organized to support both hands-on learning and senior DevOps in
 | 6 | [Terraform Backends Deep Dive](./Architecture%20%26%20Internals/6-terraform-backends-deep-dive.md) | Remote state, locking, security, migration, and Jenkins workflows |
 | 7 | [Terraform State Internals and Remote State Operations](./Architecture%20%26%20Internals/7-terraform-state-internals-and-remote-state-operations.md) | Lineage, serial, snapshots, locking, pull, and push |
 | 8 | [Terraform Variables and Data Types](./Architecture%20%26%20Internals/8-terraform-variables-and-data-types.md) | Input variables, locals, outputs, data sources, and type constraints |
+| 9 | [Terraform Policies: Beginner to Production Guide](./9-terraform-policies-beginner-to-production-guide.md) | Policy validation, OPA, Sentinel, Jenkins integration, and production guardrails |
 
 ## Suggested learning path
 
